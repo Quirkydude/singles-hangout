@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   },
   // The native Postgres driver must not be bundled into server components.
   serverExternalPackages: ["@prisma/client", "pg"],
+  // The OG image route reads these files at runtime. Serverless functions do
+  // not automatically include public/ assets, so they must be traced in
+  // explicitly or the WhatsApp preview silently falls back to no image.
+  outputFileTracingIncludes: {
+    "/api/og": ["./public/og-fallback.jpg", "./public/cop-habitat-assembly.png"],
+  },
   async headers() {
     return [
       {
