@@ -69,7 +69,8 @@ Fill in `.env.local`:
 | `DATABASE_URL` | Supabase **pooled** string, transaction mode, port 6543 |
 | `DIRECT_URL` | Supabase direct/session string, port 5432 (migrations) |
 | `DATABASE_POOL_MAX` | Optional. Pool size per instance (default 5) |
-| `DATABASE_SSL_NO_VERIFY` | Optional. `true` if TLS fails cert verification |
+| `DATABASE_SSL_NO_VERIFY` | Optional. Supabase is auto-detected, so normally leave unset |
+| `DATABASE_SSL_CA` | Optional. Verify against Supabase's CA for full TLS verification |
 | `MOOLRE_API_KEY` | Moolre VAS key from [app.moolre.com](https://app.moolre.com) |
 | `MOOLRE_SENDER_ID` | Approved Sender ID, max 11 characters |
 | `ADMIN_PASSWORD` | Password for the admin dashboard |
@@ -215,7 +216,7 @@ node scripts/optimize-assets.mjs "C:\path\to\flyer.jpg" "C:\path\to\logo.png"
 | `password authentication failed` | Special characters in the password are not percent-encoded. |
 | `Can't reach database server` from Vercel | You used `db.<ref>.supabase.co` (IPv6-only). Use the pooler host instead. |
 | `Max client connections reached` | Lower `DATABASE_POOL_MAX` (try 1–3) or raise the pool size in Supabase → Database Settings. |
-| `self-signed certificate in certificate chain` | Set `DATABASE_SSL_NO_VERIFY=true`. Supabase connections still use TLS. |
+| `self-signed certificate in certificate chain` | Normally handled automatically for Supabase pooler hosts. If it still appears, set `DATABASE_SSL_NO_VERIFY=true`, or `DATABASE_SSL_CA` to verify properly. |
 | Registration returns a 500 | Check the Vercel function logs. Usually a missing or malformed `DATABASE_URL`. |
 
 ## Admin
