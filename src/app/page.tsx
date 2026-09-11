@@ -224,7 +224,7 @@ export default async function HomePage() {
                 <Fact
                   icon={<CalendarIcon />}
                   label="Date"
-                  value="26 Sept 2026"
+                  value={EVENT.dateShort}
                 />
                 <Fact icon={<ClockIcon />} label="Time" value={EVENT.timeLabel} />
                 <Fact
@@ -306,8 +306,8 @@ export default async function HomePage() {
         <section className="border-b border-line bg-brand-red text-white">
           <div className="mx-auto grid w-full max-w-5xl grid-cols-2 divide-white/20 px-4 sm:grid-cols-4 sm:divide-x sm:px-6">
             {[
-              { value: "23+", label: "Age limit" },
-              { value: "5", label: "Activities" },
+              { value: `${EVENT.minAge}+`, label: "Age limit" },
+              { value: String(EVENT.activities.length), label: "Activities" },
               { value: "100%", label: "Free entry" },
               { value: "1", label: "Afternoon" },
             ].map((stat) => (

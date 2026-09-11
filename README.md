@@ -1,6 +1,6 @@
 # Single's Hangout 2026 - Registration Portal
 
-Free, age-gated (23+) registration portal for **Single's Hangout 2026** -
+Free, age-gated (22+) registration portal for **Single's Hangout 2026** -
 The Church of Pentecost, Foso Town District, Habitat Assembly, Youth Ministry.
 
 Registrants fill in a short form, receive their registration code by SMS
@@ -11,11 +11,11 @@ Registrants fill in a short form, receive their registration code by SMS
 | | |
 | --- | --- |
 | Date | Saturday, 26 September 2026 |
-| Time | 4:30 PM |
+| Time | 4:00 PM |
 | Theme | Before the Ring |
 | Venue | Pizzaman Chickenman, Asin Foso |
-| Entry | Free, strictly 23+ |
-| Capacity | 50 (editable from the admin dashboard) |
+| Entry | Free, strictly 22+ |
+| Capacity | 30 (editable from the admin dashboard) |
 
 Event details live in one place: [`src/lib/event.ts`](src/lib/event.ts).
 Change them there and every page, SMS, ticket and calendar invite follows.
@@ -91,12 +91,12 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ```bash
 npm run db:deploy   # apply migrations
-npm run db:seed     # writes the default capacity (50) and opens registration
+npm run db:seed     # writes the default capacity (30) and opens registration
 ```
 
 The event capacity is editable later from the admin dashboard, so you do not
 need to re-seed to change it. To seed a different initial cap, set
-`INITIAL_CAPACITY=50` before running the seed.
+`INITIAL_CAPACITY=30` before running the seed.
 
 ### 5. Run
 

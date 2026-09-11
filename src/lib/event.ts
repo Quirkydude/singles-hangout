@@ -17,19 +17,19 @@ export const EVENT = {
   logo: "/cop-habitat-assembly.png",
   logoWhite: "/cop-habitat-assembly-white.png",
 
-  // Saturday, 26 September 2026 at 4:30 PM (Ghana is UTC+0 year-round).
-  startIso: "2026-09-26T16:30:00+00:00",
+  // Saturday, 26 September 2026 at 4:00 PM (Ghana is UTC+0 year-round).
+  startIso: "2026-09-26T16:00:00+00:00",
   endIso: "2026-09-26T20:00:00+00:00",
   dateLabel: "Saturday, 26 September 2026",
   dateShort: "Sat, 26 Sept 2026",
-  timeLabel: "4:30 PM",
+  timeLabel: "4:00 PM",
 
   venue: "Pizzaman Chickenman",
   address: "Pizzaman, Asin Foso - Central Region, Ghana",
   mapsQuery: "Pizzaman Chickenman Asin Foso Central Region Ghana",
 
-  minAge: 23,
-  defaultCapacity: 50,
+  minAge: 22,
+  defaultCapacity: 30,
 
   activities: [
     {
