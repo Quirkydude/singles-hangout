@@ -27,7 +27,7 @@ export function buildRegistrationSms(
   code: string,
 ): string {
   const firstName = fullName.trim().split(/\s+/)[0] || "there";
-  const base = `Hi ${firstName}, you're registered for ${EVENT.name}. Code: ${code}. Sat 26 Sept, 4:30PM, Pizzaman Foso. Show this code at the door.`;
+  const base = `Hi ${firstName}, you're registered for ${EVENT.name}. Code: ${code}. ${EVENT.dateShort}, ${EVENT.timeLabel}, ${EVENT.venue}. Show this code at the door.`;
   const withLink = `${base} ${getTicketUrl(code)}`;
 
   if (withLink.length <= MAX_SMS_LENGTH) return withLink;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EVENT } from "@/lib/event";
+import { EVENT, getSiteUrl, whatsappShareText } from "@/lib/event";
 
 type ShareActionsProps = {
   code: string;
@@ -15,7 +15,9 @@ type ShareActionsProps = {
 export function ShareActions({ code, ticketUrl, fullName }: ShareActionsProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareText = `I just registered for ${EVENT.name}! ${EVENT.dateLabel} at ${EVENT.timeLabel}, ${EVENT.venue}. It's free for ${EVENT.minAge}+. Register here:`;
+  // Share the PUBLIC registration link, never the personal ticket URL.
+  const shareUrl = `${getSiteUrl()}/register`;
+  const shareText = whatsappShareText(shareUrl);
 
   async function copyLink() {
     try {
@@ -28,21 +30,20 @@ export function ShareActions({ code, ticketUrl, fullName }: ShareActionsProps) {
   }
 
   async function share() {
-    const data = {
-      title: EVENT.name,
-      text: shareText,
-      url: ticketUrl,
-    };
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
-        await navigator.share(data);
+        await navigator.share({
+          title: `${EVENT.name} - ${EVENT.theme}`,
+          text: shareText,
+          url: shareUrl,
+        });
         return;
       } catch {
         // user dismissed the sheet - fall through to WhatsApp
       }
     }
     window.open(
-      `https://wa.me/?text=${encodeURIComponent(`${shareText} ${ticketUrl}`)}`,
+      `https://wa.me/?text=${encodeURIComponent(shareText)}`,
       "_blank",
       "noopener,noreferrer",
     );

@@ -18,7 +18,7 @@ const anton = Anton({
 
 const siteUrl = getSiteUrl();
 
-const description = `${EVENT.name} - ${EVENT.dateLabel} at ${EVENT.timeLabel}, ${EVENT.venue}. Free registration for singles aged ${EVENT.minAge} and above. Real stories, panel talks, games and more.`;
+const description = `${EVENT.name} - theme "${EVENT.theme}". ${EVENT.dateLabel} at ${EVENT.timeLabel}, ${EVENT.venue}. Free registration for singles aged ${EVENT.minAge} and above. Real stories, panel talks, games and more.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   keywords: [
     "Single's Hangout 2026",
     "Single's Hangout",
+    "Before the Ring",
     "Church of Pentecost",
     "Habitat Assembly",
     "Foso Town District",
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     type: "website",
     url: siteUrl,
     siteName: EVENT.name,
-    title: `${EVENT.name} - ${EVENT.dateLabel}`,
+    title: `${EVENT.name} - ${EVENT.theme}`,
     description,
     locale: "en_GH",
     images: [
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${EVENT.name} - ${EVENT.dateLabel}`,
+    title: `${EVENT.name} - ${EVENT.theme}`,
     description,
     images: ["/api/og"],
   },

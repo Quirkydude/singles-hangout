@@ -1,22 +1,20 @@
+/**
+ * Seeds the editable settings rows (capacity, registration open/closed).
+ *
+ * Uses the shared Prisma client from src/lib/prisma.ts so the Supabase
+ * connection handling (pooler parameters, pool size, TLS options) is
+ * identical to the running application.
+ */
 import { config } from "dotenv";
 config({ path: ".env.local" });
 config();
 
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { prisma } from "../src/lib/prisma";
 import { EVENT } from "../src/lib/event";
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is not set. Add it to .env.local first.");
-  }
-
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
-  });
-
-  const capacity = process.env.INITIAL_CAPACITY?.trim() || String(EVENT.defaultCapacity);
+  const capacity =
+    process.env.INITIAL_CAPACITY?.trim() || String(EVENT.defaultCapacity);
 
   const settings = [
     { key: "capacity", value: capacity },
@@ -32,13 +30,17 @@ async function main() {
   }
 
   const all = await prisma.setting.findMany({ orderBy: { key: "asc" } });
+  const count = await prisma.registration.count();
+
   console.log("Settings:");
   for (const row of all) console.log(`  ${row.key} = ${row.value}`);
-
-  await prisma.$disconnect();
+  console.log(`Registrations so far: ${count}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+main()
+  .then(() => prisma.$disconnect())
+  .catch(async (error) => {
+    console.error(error);
+    await prisma.$disconnect().catch(() => {});
+    process.exit(1);
+  });

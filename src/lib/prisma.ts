@@ -24,7 +24,10 @@ const POOLER_TRANSACTION_PORT = "6543";
 /** Small pool: this runs on serverless, where many instances each hold one. */
 const DEFAULT_POOL_MAX = 5;
 
-function resolveConnectionString(raw: string): string {
+function resolveConnectionString(
+  raw: string,
+  opts: { stripSslMode: boolean },
+): string {
   const url = new URL(raw);
 
   // Supavisor in transaction mode does not support the named prepared
@@ -32,6 +35,13 @@ function resolveConnectionString(raw: string): string {
   // Supabase's dashboard usually includes this; add it if it is missing.
   if (url.port === POOLER_TRANSACTION_PORT && !url.searchParams.has("pgbouncer")) {
     url.searchParams.set("pgbouncer", "true");
+  }
+
+  // node-postgres treats `sslmode=require` as `verify-full` and it takes
+  // precedence over any explicit `ssl` option, so the certificate cannot be
+  // accepted. Remove it when the caller has opted out of verification.
+  if (opts.stripSslMode) {
+    url.searchParams.delete("sslmode");
   }
 
   return url.toString();
@@ -50,14 +60,17 @@ function createClient(): PrismaClient {
     );
   }
 
+  // Supabase's pooler certificate chain is not always present in Node's CA
+  // bundle. Opting out here still encrypts the connection; it only skips
+  // certificate verification. Prefer leaving this off so TLS is verified.
+  const noVerify = process.env.DATABASE_SSL_NO_VERIFY === "true";
+
   const adapter = new PrismaPg({
-    connectionString: resolveConnectionString(connectionString),
+    connectionString: resolveConnectionString(connectionString, {
+      stripSslMode: noVerify,
+    }),
     max: resolvePoolMax(),
-    // Escape hatch for environments that reject Supabase's certificate
-    // chain. Prefer leaving this off so TLS is fully verified.
-    ...(process.env.DATABASE_SSL_NO_VERIFY === "true"
-      ? { ssl: { rejectUnauthorized: false } }
-      : {}),
+    ...(noVerify ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 
   return new PrismaClient({ adapter });

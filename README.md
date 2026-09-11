@@ -12,8 +12,10 @@ Registrants fill in a short form, receive their registration code by SMS
 | --- | --- |
 | Date | Saturday, 26 September 2026 |
 | Time | 4:30 PM |
-| Venue | Before Ring, Pizzaman, Foso |
+| Theme | Before the Ring |
+| Venue | Pizzaman Chickenman, Asin Foso |
 | Entry | Free, strictly 23+ |
+| Capacity | 50 (editable from the admin dashboard) |
 
 Event details live in one place: [`src/lib/event.ts`](src/lib/event.ts).
 Change them there and every page, SMS, ticket and calendar invite follows.
@@ -88,10 +90,12 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ```bash
 npm run db:deploy   # apply migrations
-npm run db:seed     # writes the default capacity (150) and opens registration
+npm run db:seed     # writes the default capacity (50) and opens registration
 ```
 
-To change the initial cap, set `INITIAL_CAPACITY=200` before seeding.
+The event capacity is editable later from the admin dashboard, so you do not
+need to re-seed to change it. To seed a different initial cap, set
+`INITIAL_CAPACITY=50` before running the seed.
 
 ### 5. Run
 
@@ -157,7 +161,7 @@ X-API-VASKEY: <MOOLRE_API_KEY>
 The message is kept within a single 160-character SMS segment. The ticket
 link is only appended when the whole message still fits.
 
-## Flyer assets
+## Flyer and logo assets
 
 The print flyer is 12000 x 14999 (about 5 MB) and must never be served to a
 browser. `npm run assets` generates the web versions into `public/`:
@@ -166,10 +170,16 @@ browser. `npm run assets` generates the web versions into `public/`:
 - `flyer-sm.jpg` - 720px mobile hero
 - `og-fallback.jpg` - 1200 x 630 social preview fallback
 
-Run it with an explicit source path if the original is elsewhere:
+It also prepares the church logo for the header, footer and OG card:
+
+- `cop-habitat-assembly.png` - full colour, for light backgrounds
+- `cop-habitat-assembly-white.png` - white, for the dark sections
+- `src/app/icon.png` - favicon, generated from the logo
+
+Run it with explicit source paths if the originals are elsewhere:
 
 ```bash
-node scripts/optimize-assets.mjs "C:\path\to\flyer.jpg"
+node scripts/optimize-assets.mjs "C:\path\to\flyer.jpg" "C:\path\to\logo.png"
 ```
 
 ## Deploying to Vercel

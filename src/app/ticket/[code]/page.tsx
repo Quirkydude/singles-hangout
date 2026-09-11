@@ -139,7 +139,7 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
                     Venue
                   </dt>
                   <dd className="mt-0.5 text-ink">
-                    {EVENT.venueDetail}, {EVENT.venue}
+                    {EVENT.venue}
                   </dd>
                 </div>
               </dl>

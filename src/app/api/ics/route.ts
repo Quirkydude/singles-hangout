@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const description = [
     `${EVENT.name} - ${EVENT.assembly}, ${EVENT.ministry}.`,
     code ? `Your registration code: ${code}.` : "",
-    `Activities: ${EVENT.activities.join(", ")}.`,
+    `Activities: ${EVENT.activities.map((a) => a.title).join(", ")}.`,
     "Registration is free.",
   ]
     .filter(Boolean)
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
     `DTEND:${toIcsUtc(EVENT.endIso)}`,
     foldLine(`SUMMARY:${escapeIcsText(EVENT.name)}`),
     foldLine(
-      `LOCATION:${escapeIcsText(`${EVENT.venueDetail}, ${EVENT.venue}, ${EVENT.address}`)}`,
+      `LOCATION:${escapeIcsText(`${EVENT.venue}, ${EVENT.address}`)}`,
     ),
     foldLine(`DESCRIPTION:${escapeIcsText(description)}`),
     "STATUS:CONFIRMED",

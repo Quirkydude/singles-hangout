@@ -8,34 +8,24 @@ export const dynamic = "force-dynamic";
 
 const SIZE = { width: 1200, height: 630 };
 
-/**
- * Loads the flyer straight off disk so the OG image does not depend on
- * the site being reachable at its public URL. Falls back to a remote
- * fetch (then to no image) if the file is unavailable.
- */
-async function loadFlyer(): Promise<string | null> {
+/** Reads a file from public/ and returns a data URI for ImageResponse. */
+async function loadPublicImage(
+  filename: string,
+  mime: string,
+): Promise<string | null> {
   try {
-    const file = await readFile(
-      path.join(process.cwd(), "public", "og-fallback.jpg"),
-    );
-    return `data:image/jpeg;base64,${file.toString("base64")}`;
+    const file = await readFile(path.join(process.cwd(), "public", filename));
+    return `data:${mime};base64,${file.toString("base64")}`;
   } catch {
-    try {
-      const response = await fetch(
-        `${process.env.SITE_URL || EVENT.siteUrlFallback}/og-fallback.jpg`,
-        { cache: "no-store" },
-      );
-      if (!response.ok) return null;
-      const buffer = Buffer.from(await response.arrayBuffer());
-      return `data:image/jpeg;base64,${buffer.toString("base64")}`;
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
 export async function GET() {
-  const flyer = await loadFlyer();
+  const [flyer, logo] = await Promise.all([
+    loadPublicImage("og-fallback.jpg", "image/jpeg"),
+    loadPublicImage("cop-habitat-assembly.png", "image/png"),
+  ]);
 
   return new ImageResponse(
     (
@@ -54,30 +44,52 @@ export async function GET() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            padding: "60px",
+            padding: "56px 60px",
             width: flyer ? "660px" : "100%",
             height: "100%",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
+            {/* Church branding */}
             <div
-              style={{
-                display: "flex",
-                fontSize: 21,
-                letterSpacing: 3,
-                color: "#ff4d63",
-                textTransform: "uppercase",
-                fontWeight: 700,
-              }}
+              style={{ display: "flex", alignItems: "center", gap: 16 }}
             >
-              {`${EVENT.host} - ${EVENT.district}`}
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo} alt="" width={62} height={62} />
+              ) : null}
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    fontSize: 19,
+                    letterSpacing: 2.5,
+                    color: "#ff4d63",
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                  }}
+                >
+                  {EVENT.host}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    fontSize: 17,
+                    color: "rgba(255,255,255,.66)",
+                    textTransform: "uppercase",
+                    letterSpacing: 1.5,
+                  }}
+                >
+                  {`${EVENT.assembly} - ${EVENT.ministry}`}
+                </div>
+              </div>
             </div>
 
             <div
               style={{
                 display: "flex",
-                marginTop: 26,
-                fontSize: 86,
+                marginTop: 30,
+                fontSize: 82,
                 lineHeight: 1,
                 fontWeight: 800,
                 textTransform: "uppercase",
@@ -89,40 +101,57 @@ export async function GET() {
             <div
               style={{
                 display: "flex",
-                fontSize: 86,
+                fontSize: 82,
                 lineHeight: 1.05,
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: -2,
-                color: "#d6081f",
               }}
             >
               Hangout 2026
             </div>
+
+            <div
+              style={{
+                display: "flex",
+                marginTop: 14,
+                alignSelf: "flex-start",
+                padding: "9px 20px",
+                borderRadius: 999,
+                border: "2px solid #d6081f",
+                color: "#ff4d63",
+                fontSize: 22,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
+              {EVENT.theme}
+            </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", fontSize: 29, fontWeight: 700 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            <div style={{ display: "flex", fontSize: 28, fontWeight: 700 }}>
               {`${EVENT.dateLabel} - ${EVENT.timeLabel}`}
             </div>
             <div
               style={{
                 display: "flex",
-                fontSize: 25,
+                fontSize: 24,
                 color: "rgba(255,255,255,.72)",
               }}
             >
-              {`${EVENT.venueDetail}, ${EVENT.venue}`}
+              {`${EVENT.venue} - ${EVENT.address.split(" - ")[0]}`}
             </div>
             <div
               style={{
                 display: "flex",
-                marginTop: 12,
+                marginTop: 10,
                 alignSelf: "flex-start",
                 padding: "13px 28px",
                 borderRadius: 999,
                 backgroundColor: "#d6081f",
-                fontSize: 23,
+                fontSize: 22,
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: 1,
@@ -150,7 +179,7 @@ export async function GET() {
               src={flyer}
               alt=""
               width={470}
-              height={587}
+              height={583}
               style={{ objectFit: "contain", borderRadius: 10 }}
             />
           </div>

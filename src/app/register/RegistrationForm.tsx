@@ -130,10 +130,10 @@ export function RegistrationForm({ spotsLeft }: { spotsLeft: number }) {
       </div>
 
       <fieldset disabled={isBlocked}>
-        <legend className={labelClass}>Are you a member?</legend>
+        <legend className={labelClass}>Are you a youth at Habitat Assembly?</legend>
         <div className="mt-2 grid grid-cols-2 gap-3">
           {[
-            { value: "yes", label: "Yes, I am a member" },
+            { value: "yes", label: "Yes, I am" },
             { value: "no", label: "No, I am not" },
           ].map((option) => (
             <label
