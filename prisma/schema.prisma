@@ -1,0 +1,47 @@
+// Single's Hangout 2026 - registration portal data model
+// Prisma ORM 7 (driver adapter based, generated client lives in src/generated/prisma)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SmsStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Registration {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  fullName      String
+  location      String
+  isMember      Boolean
+  phone         String    @unique
+  age           Int
+  gender        String?
+  panelQuestion String?
+  smsStatus     SmsStatus @default(PENDING)
+  smsError      String?
+  smsSentAt     DateTime?
+  attended      Boolean   @default(false)
+  checkedInAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([createdAt])
+  @@index([attended])
+}
+
+// Simple key/value settings so capacity and registration open/closed
+// can be changed without a redeploy.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
