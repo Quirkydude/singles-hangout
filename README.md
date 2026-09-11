@@ -22,7 +22,7 @@ Change them there and every page, SMS, ticket and calendar invite follows.
 
 - **Next.js 16** (App Router) + React 19 + TypeScript
 - **Tailwind CSS v4** with a red / white / black theme
-- **Prisma 7** + **Neon Postgres** (driver adapter, `@prisma/adapter-pg`)
+- **Prisma 7** + **Supabase Postgres** (driver adapter, `@prisma/adapter-pg`)
 - **Moolre** SMS Open API
 - **zod** validation, `qrcode` for tickets, `html5-qrcode` for door scanning
 - Deployed on **Vercel**
@@ -37,8 +37,22 @@ npm install
 
 ### 2. Create a database
 
-Create a free project at [neon.tech](https://neon.tech), then copy the two
-connection strings it gives you (pooled and direct).
+Create a project at [supabase.com](https://supabase.com), then open
+**Connect** (top of the dashboard) and pick the **ORMs → Prisma** tab. Copy
+both strings it shows. Two details matter:
+
+- Use the **Transaction pooler** string (port **6543**) for `DATABASE_URL`.
+  It must keep the `?pgbouncer=true` suffix — Supavisor in transaction mode
+  does not support the prepared statements Prisma uses by default.
+- The username is `postgres.<project-ref>`, **not** plain `postgres`.
+- If your password contains `@`, `#`, `%` or similar, percent-encode it
+  (`@` becomes `%40`), otherwise the URL will not parse.
+
+`DIRECT_URL` is the same credentials on port **5432**, used only by the
+Prisma CLI for migrations.
+
+> Within Vercel, prefer the pooler host (port 6543/5432) over
+> `db.<ref>.supabase.co`, which is IPv6-only and unreachable from Vercel.
 
 ### 3. Configure environment
 
@@ -50,8 +64,10 @@ Fill in `.env.local`:
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Neon **pooled** connection string (used at runtime) |
-| `DIRECT_URL` | Neon **direct** connection string (used by migrations) |
+| `DATABASE_URL` | Supabase **pooled** string, transaction mode, port 6543 |
+| `DIRECT_URL` | Supabase direct/session string, port 5432 (migrations) |
+| `DATABASE_POOL_MAX` | Optional. Pool size per instance (default 5) |
+| `DATABASE_SSL_NO_VERIFY` | Optional. `true` if TLS fails cert verification |
 | `MOOLRE_API_KEY` | Moolre VAS key from [app.moolre.com](https://app.moolre.com) |
 | `MOOLRE_SENDER_ID` | Approved Sender ID, max 11 characters |
 | `ADMIN_PASSWORD` | Password for the admin dashboard |
@@ -163,7 +179,8 @@ node scripts/optimize-assets.mjs "C:\path\to\flyer.jpg"
    Variables**. `SITE_URL` must be the final public URL, because QR codes and
    OG images are built from it.
 3. `postinstall` runs `prisma generate` automatically. Apply migrations once
-   against Neon:
+   against Supabase — either locally against the Supabase `DIRECT_URL`, or by
+   running these in a shell with the production env vars:
    ```bash
    npm run db:deploy
    npm run db:seed
@@ -178,6 +195,18 @@ node scripts/optimize-assets.mjs "C:\path\to\flyer.jpg"
 
 > Camera check-in requires HTTPS. It works on the Vercel deployment but not
 > over plain `http://` on a LAN IP.
+
+## Troubleshooting Supabase
+
+| Symptom | Cause and fix |
+| --- | --- |
+| `prepared statement "s0" already exists` | Connecting on port 6543 without `?pgbouncer=true`. Add it to `DATABASE_URL`. |
+| `Tenant or user not found` | Username must be `postgres.<project-ref>`, not `postgres`. |
+| `password authentication failed` | Special characters in the password are not percent-encoded. |
+| `Can't reach database server` from Vercel | You used `db.<ref>.supabase.co` (IPv6-only). Use the pooler host instead. |
+| `Max client connections reached` | Lower `DATABASE_POOL_MAX` (try 1–3) or raise the pool size in Supabase → Database Settings. |
+| `self-signed certificate in certificate chain` | Set `DATABASE_SSL_NO_VERIFY=true`. Supabase connections still use TLS. |
+| Registration returns a 500 | Check the Vercel function logs. Usually a missing or malformed `DATABASE_URL`. |
 
 ## Admin
 
