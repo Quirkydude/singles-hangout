@@ -15,7 +15,27 @@ Registrants fill in a short form, receive their registration code by SMS
 | Theme | Before the Ring |
 | Venue | Pizzaman Chickenman, Asin Foso |
 | Entry | Free, strictly 22+ |
+| Dress code | Strictly formal (enforced at the door) |
 | Capacity | 30 (editable from the admin dashboard) |
+
+## Registration flow
+
+The form is step-based. Later steps depend on earlier answers:
+
+1. **Personal info** - name, location, phone, age, gender, panel question.
+2. **Your part** - "Are you facilitating this event?"
+   - **Yes** → skips straight to submit. Recorded as `Organizer`.
+   - **No** → continues to step 3.
+3. **Where you fellowship** - Habitat Assembly / another COP assembly /
+   doesn't attend COP.
+   - **Habitat** or **another COP assembly** → continues to step 4.
+   - **Doesn't attend COP** → skips step 4, recorded as `Participant`.
+4. **Your role** - Organizer / Protocol Member / Participant.
+
+The server re-runs the same branching in `registrationSchema`, so a tampered
+form cannot skip a required answer. See `src/lib/registration-options.ts` for
+the option lists and the two `resolve*` helpers that map a person's answers
+onto the stored `affiliation` and `role`.
 
 Event details live in one place: [`src/lib/event.ts`](src/lib/event.ts).
 Change them there and every page, SMS, ticket and calendar invite follows.

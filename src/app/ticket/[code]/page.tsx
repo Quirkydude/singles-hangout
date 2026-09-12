@@ -42,7 +42,9 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
       fullName: true,
       phone: true,
       location: true,
-      isMember: true,
+      isFacilitator: true,
+      affiliation: true,
+      role: true,
       age: true,
       smsStatus: true,
       createdAt: true,
@@ -96,8 +98,11 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
                 role="img"
               />
 
-              <p className="mt-4 text-center text-sm text-ink-muted">
-                Show this code (or the QR) at the entrance.
+              <p className="mt-4 text-center text-sm font-semibold text-ink">
+                Dress code: <span className="text-brand-red">{EVENT.dressCode}</span>
+              </p>
+              <p className="mt-1 text-center text-xs text-ink-muted">
+                Please dress formally. Entry may be refused otherwise.
               </p>
             </div>
 
@@ -122,10 +127,22 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
                 </div>
                 <div>
                   <dt className="text-[0.68rem] font-bold uppercase tracking-widest text-ink-muted">
-                    Member
+                    Attending as
                   </dt>
                   <dd className="mt-0.5 text-ink">
-                    {registration.isMember ? "Yes" : "No"}
+                    {registration.isFacilitator
+                      ? "Facilitator"
+                      : (registration.role ?? "Participant")}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[0.68rem] font-bold uppercase tracking-widest text-ink-muted">
+                    Fellowship
+                  </dt>
+                  <dd className="mt-0.5 text-ink">
+                    {registration.isFacilitator
+                      ? "Facilitating"
+                      : (registration.affiliation ?? "Not specified")}
                   </dd>
                 </div>
                 <div>
@@ -147,8 +164,7 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
               {registration.smsStatus !== "SENT" ? (
                 <p className="mt-5 rounded-lg bg-cream px-3.5 py-2.5 text-xs text-ink-muted">
                   We could not confirm SMS delivery. Your ticket is still valid -
-                  screenshot this page, or ask a Youth Ministry leader to resend
-                  your code.
+                  screenshot this page, or contact 0538118529 to resen your code.
                 </p>
               ) : null}
 

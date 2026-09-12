@@ -17,22 +17,24 @@ enum SmsStatus {
 }
 
 model Registration {
-  id            String    @id @default(cuid())
-  code          String    @unique
-  fullName      String
-  location      String
-  isMember      Boolean
-  phone         String    @unique
-  age           Int
-  gender        String?
-  panelQuestion String?
-  smsStatus     SmsStatus @default(PENDING)
-  smsError      String?
-  smsSentAt     DateTime?
-  attended      Boolean   @default(false)
-  checkedInAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  code            String    @unique
+  fullName        String
+  location        String
+  isFacilitator   Boolean   @default(false)
+  affiliation     String? // "Habitat Assembly", "Other COP Assembly", "Non-COP"
+  role            String? // "Organizer", "Protocol Member", "Participant"
+  phone           String    @unique
+  age             Int
+  gender          String?
+  panelQuestion   String?
+  smsStatus       SmsStatus @default(PENDING)
+  smsError        String?
+  smsSentAt       DateTime?
+  attended        Boolean   @default(false)
+  checkedInAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([createdAt])
   @@index([attended])

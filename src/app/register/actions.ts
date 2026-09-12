@@ -5,22 +5,44 @@ import { registrationSchema } from "@/lib/validation";
 import { normalizeGhanaPhone } from "@/lib/phone";
 import { registerAttendee } from "@/lib/registration";
 import { EVENT } from "@/lib/event";
+import {
+  resolveAffiliation,
+  resolveRole,
+  type AffiliationValue,
+  type RoleValue,
+} from "@/lib/registration-options";
 import type { FieldErrors, FormState } from "@/lib/form-state";
+
+/** Maps a field name to the step that owns it, for error routing. */
+function stepForField(field: string | undefined): number {
+  switch (field) {
+    case "isFacilitator":
+      return 2;
+    case "affiliation":
+      return 3;
+    case "role":
+      return 4;
+    default:
+      return 1;
+  }
+}
 
 function rawValues(formData: FormData): Record<string, string> {
   const keys = [
     "fullName",
     "location",
-    "isMember",
     "phone",
     "age",
     "gender",
     "panelQuestion",
+    "isFacilitator",
+    "affiliation",
+    "role",
   ];
   const values: Record<string, string> = {};
   for (const key of keys) {
     const value = formData.get(key);
-    if (typeof value === "string") values[key] = value;
+    if (typeof value === "string" && value !== "") values[key] = value;
   }
   return values;
 }
@@ -39,11 +61,15 @@ export async function registerAction(
       const field = String(issue.path[0] ?? "form");
       if (!fieldErrors[field]) fieldErrors[field] = issue.message;
     }
+    // Send the user back to the step that owns the first invalid field,
+    // otherwise the error would be invisible on a later step.
+    const step = stepForField(Object.keys(fieldErrors)[0]);
     return {
       status: "error",
       message: "Please fix the highlighted fields.",
       fieldErrors,
       values,
+      step,
     };
   }
 
@@ -69,10 +95,18 @@ export async function registerAction(
     };
   }
 
+  const isFacilitator = data.isFacilitator === "yes";
+  const affiliation = (data.affiliation || undefined) as
+    | AffiliationValue
+    | undefined;
+  const roleInput = (data.role || undefined) as RoleValue | undefined;
+
   const result = await registerAttendee({
     fullName: data.fullName,
     location: data.location,
-    isMember: data.isMember === "yes",
+    isFacilitator,
+    affiliation: resolveAffiliation(isFacilitator, affiliation),
+    role: resolveRole(isFacilitator, affiliation, roleInput),
     phone,
     age: data.age,
     gender: data.gender,

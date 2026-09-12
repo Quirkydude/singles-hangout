@@ -84,7 +84,9 @@ export type RegisterResult =
 type RegisterInput = {
   fullName: string;
   location: string;
-  isMember: boolean;
+  isFacilitator: boolean;
+  affiliation?: string | null;
+  role?: string | null;
   phone: string;
   age: number;
   gender?: string | null;
@@ -96,7 +98,7 @@ type RegisterInput = {
  *
  * - The phone number is normalised here (not by the caller) so an
  *   unnormalised number can never reach Moolre or create a duplicate row.
- * - Under-23s are rejected (server-side age gate).
+ * - Under-age applicants are rejected (server-side gate on EVENT.minAge).
  * - A phone number that is already registered is not duplicated: the
  *   existing code is re-sent instead.
  * - Registration is blocked once capacity is reached.
@@ -136,7 +138,9 @@ export async function registerAttendee(
   const data = {
     fullName: input.fullName,
     location: input.location,
-    isMember: input.isMember,
+    isFacilitator: input.isFacilitator,
+    affiliation: input.affiliation?.trim() ? input.affiliation.trim() : null,
+    role: input.role?.trim() ? input.role.trim() : null,
     phone,
     age: input.age,
     gender: input.gender && input.gender !== "unspecified" ? input.gender : null,

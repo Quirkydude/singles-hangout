@@ -16,6 +16,8 @@ export type FormState = {
   fieldErrors?: FieldErrors;
   /** Echoed back so a failed submit does not wipe what the user typed. */
   values?: Record<string, string>;
+  /** Which step to show after a failed submit, so errors are visible. */
+  step?: number;
 };
 
 export const initialFormState: FormState = { status: "idle" };

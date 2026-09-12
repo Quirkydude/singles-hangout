@@ -278,8 +278,11 @@ export default async function HomePage() {
               </div>
 
               <p className="mt-3 text-xs text-white/45">
-                Strictly {EVENT.minAge}+ &middot; 100% free &middot; Registration
-                required
+                Strictly {EVENT.minAge}+ &middot; 100% free &middot;
+                Registration required &middot; Dress code:{" "}
+                <span className="font-semibold text-white/70">
+                  {EVENT.dressCode}
+                </span>
               </p>
             </div>
 
@@ -297,6 +300,44 @@ export default async function HomePage() {
                 />
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ============================================================== */}
+        {/* Dress code - deliberately loud, it is enforced at the door       */}
+        {/* ============================================================== */}
+        <section className="bg-ink text-white">
+          <div className="mx-auto flex w-full max-w-5xl flex-col items-start gap-5 px-4 py-7 sm:flex-row sm:items-center sm:px-6">
+            <span
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-brand-red text-brand-red"
+              aria-hidden
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2 3 6v6c0 5 3.8 9.3 9 10 5.2-.7 9-5 9-10V6Z" />
+                <path d="M12 8v5" />
+                <path d="M12 16.5h.01" />
+              </svg>
+            </span>
+            <div className="flex-1">
+              <p className="font-display text-xl font-bold uppercase tracking-wide text-brand-red sm:text-2xl">
+                Dress code: {EVENT.dressCode}
+              </p>
+              <p className="mt-1.5 text-sm text-white/75">
+                {EVENT.dressCodeNote}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-brand-red px-4 py-2 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-white">
+              Enforced at the door
+            </span>
           </div>
         </section>
 

@@ -31,6 +31,11 @@ export const EVENT = {
   minAge: 22,
   defaultCapacity: 30,
 
+  /** Enforced at the door. Surfaced prominently across the site. */
+  dressCode: "Strictly formal",
+  dressCodeNote:
+    "Smart, modest and formal. No jeans, sneakers, shorts or casual wear - you may be turned away at the door.",
+
   activities: [
     {
       title: "Real stories & lessons",
@@ -41,11 +46,6 @@ export const EVENT = {
       title: "Open panel talks",
       description:
         "Ask the questions you have always wanted to ask, out loud and without judgement.",
-    },
-    {
-      title: "Exchange of gifts",
-      description:
-        "A small, thoughtful exchange to break the ice and start conversations.",
     },
     {
       title: "Socialization",

@@ -39,32 +39,89 @@ const smsBadge: Record<string, string> = {
   PENDING: "bg-cream text-ink-muted border-line",
 };
 
+/** Small labelled count used in the breakdown rows. */
+function Breakdown({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{ label: string; value: number }>;
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-white px-5 py-4">
+      <p className="text-[0.68rem] font-bold uppercase tracking-widest text-ink-muted">
+        {title}
+      </p>
+      <ul className="mt-2.5 space-y-1.5 text-sm">
+        {rows.map((row) => (
+          <li key={row.label} className="flex items-center justify-between gap-4">
+            <span className="text-ink-muted">{row.label}</span>
+            <strong className="text-ink">{row.value}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default async function AdminDashboardPage() {
-  const [settings, registrations, attendedCount, smsFailedCount, memberCount] =
-    await Promise.all([
-      getEventSettings(),
-      prisma.registration.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 200,
-        select: {
-          id: true,
-          code: true,
-          fullName: true,
-          phone: true,
-          location: true,
-          isMember: true,
-          age: true,
-          gender: true,
-          panelQuestion: true,
-          smsStatus: true,
-          attended: true,
-          createdAt: true,
-        },
-      }),
-      prisma.registration.count({ where: { attended: true } }),
-      prisma.registration.count({ where: { smsStatus: "FAILED" } }),
-      prisma.registration.count({ where: { isMember: true } }),
-    ]);
+  const [
+    settings,
+    registrations,
+    attendedCount,
+    smsFailedCount,
+    facilitatorRows,
+    affiliationRows,
+    roleRows,
+  ] = await Promise.all([
+    getEventSettings(),
+    prisma.registration.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true,
+        code: true,
+        fullName: true,
+        phone: true,
+        location: true,
+        isFacilitator: true,
+        affiliation: true,
+        role: true,
+        age: true,
+        gender: true,
+        panelQuestion: true,
+        smsStatus: true,
+        attended: true,
+        createdAt: true,
+      },
+    }),
+    prisma.registration.count({ where: { attended: true } }),
+    prisma.registration.count({ where: { smsStatus: "FAILED" } }),
+    prisma.registration.groupBy({
+      by: ["isFacilitator"],
+      _count: { _all: true },
+    }),
+    prisma.registration.groupBy({
+      by: ["affiliation"],
+      _count: { _all: true },
+    }),
+    prisma.registration.groupBy({
+      by: ["role"],
+      _count: { _all: true },
+    }),
+  ]);
+
+  const facilitatorCount =
+    facilitatorRows.find((r) => r.isFacilitator)?._count._all ?? 0;
+  const participantOnlyCount =
+    facilitatorRows.find((r) => !r.isFacilitator)?._count._all ?? 0;
+
+  const affiliationCounts = new Map(
+    affiliationRows.map((r) => [r.affiliation ?? "Not specified", r._count._all]),
+  );
+  const roleCounts = new Map(
+    roleRows.map((r) => [r.role ?? "Not specified", r._count._all]),
+  );
 
   return (
     <div className="space-y-8">
@@ -104,22 +161,55 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      <div className="flex flex-wrap gap-6 rounded-2xl border border-line bg-white px-5 py-4 text-sm">
-        <span className="text-ink-muted">
-          Members: <strong className="text-ink">{memberCount}</strong>
-        </span>
-        <span className="text-ink-muted">
-          Non-members:{" "}
-          <strong className="text-ink">
-            {settings.registeredCount - memberCount}
-          </strong>
-        </span>
-        <span className="text-ink-muted">
-          Registration is{" "}
-          <strong className="text-ink">
-            {settings.registrationOpen ? "open" : "closed"}
-          </strong>
-        </span>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Breakdown
+          title="Role"
+          rows={[
+            { label: "Organizer", value: roleCounts.get("Organizer") ?? 0 },
+            {
+              label: "Protocol Member",
+              value: roleCounts.get("Protocol Member") ?? 0,
+            },
+            { label: "Participant", value: roleCounts.get("Participant") ?? 0 },
+          ]}
+        />
+        <Breakdown
+          title="Affiliation"
+          rows={[
+            {
+              label: "Habitat Assembly",
+              value: affiliationCounts.get("Habitat Assembly") ?? 0,
+            },
+            {
+              label: "Other COP",
+              value: affiliationCounts.get("Other COP Assembly") ?? 0,
+            },
+            { label: "Non-COP", value: affiliationCounts.get("Non-COP") ?? 0 },
+            {
+              label: "Not specified",
+              value: affiliationCounts.get("Not specified") ?? 0,
+            },
+          ]}
+        />
+        <Breakdown
+          title="Taking part as"
+          rows={[
+            { label: "Facilitators", value: facilitatorCount },
+            { label: "Attendees", value: participantOnlyCount },
+          ]}
+        />
+        <div className="flex flex-col justify-center rounded-2xl border border-line bg-white px-5 py-4 text-sm">
+          <span className="text-ink-muted">
+            Registration is{" "}
+            <strong className="text-ink">
+              {settings.registrationOpen ? "open" : "closed"}
+            </strong>
+          </span>
+          <span className="mt-1 text-ink-muted">
+            Capacity <strong className="text-ink">{settings.capacity}</strong>,
+            spots left <strong className="text-ink">{settings.spotsLeft}</strong>
+          </span>
+        </div>
       </div>
 
       <section>
@@ -149,7 +239,8 @@ export default async function AdminDashboardPage() {
                     <th className="px-4 py-3 font-bold">Phone</th>
                     <th className="px-4 py-3 font-bold">Location</th>
                     <th className="px-4 py-3 font-bold">Age</th>
-                    <th className="px-4 py-3 font-bold">Member</th>
+                    <th className="px-4 py-3 font-bold">Role</th>
+                    <th className="px-4 py-3 font-bold">Fellowship</th>
                     <th className="px-4 py-3 font-bold">SMS</th>
                     <th className="px-4 py-3 font-bold">Status</th>
                     <th className="px-4 py-3 text-right font-bold">Actions</th>
@@ -170,7 +261,18 @@ export default async function AdminDashboardPage() {
                       <td className="px-4 py-3 text-ink-muted">{row.location}</td>
                       <td className="px-4 py-3 text-ink-muted">{row.age}</td>
                       <td className="px-4 py-3 text-ink-muted">
-                        {row.isMember ? "Yes" : "No"}
+                        {row.isFacilitator ? (
+                          <span className="font-semibold text-ink">
+                            Facilitator
+                          </span>
+                        ) : (
+                          (row.role ?? "Participant")
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-ink-muted">
+                        {row.isFacilitator
+                          ? "-"
+                          : (row.affiliation ?? "Not specified")}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -232,7 +334,14 @@ export default async function AdminDashboardPage() {
                       {row.location}
                     </span>
                     <span className="rounded-full bg-cream px-2 py-0.5 text-ink-muted">
-                      {row.isMember ? "Member" : "Non-member"}
+                      {row.isFacilitator
+                        ? "Facilitator"
+                        : (row.role ?? "Participant")}
+                    </span>
+                    <span className="rounded-full bg-cream px-2 py-0.5 text-ink-muted">
+                      {row.isFacilitator
+                        ? "-"
+                        : (row.affiliation ?? "Not specified")}
                     </span>
                     <span
                       className={`rounded-full border px-2 py-0.5 ${

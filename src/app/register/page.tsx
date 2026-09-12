@@ -62,10 +62,16 @@ export default async function RegisterPage() {
               </div>
             ) : (
               <>
-                <div className="mb-6 rounded-xl bg-cream px-4 py-3 text-sm text-ink-muted">
+                <div className="mb-4 rounded-xl bg-cream px-4 py-3 text-sm text-ink-muted">
                   This event is strictly for singles aged{" "}
                   <strong className="text-ink">{EVENT.minAge} and above</strong>.
                   Registration is free.
+                </div>
+                <div className="mb-6 rounded-xl border-2 border-ink bg-ink px-4 py-3 text-sm text-white">
+                  <strong className="font-display uppercase tracking-wide text-brand-red">
+                    Dress code: {EVENT.dressCode}.
+                  </strong>{" "}
+                  {EVENT.dressCodeNote}
                 </div>
                 <RegistrationForm spotsLeft={settings.spotsLeft} />
               </>

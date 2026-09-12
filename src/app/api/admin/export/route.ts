@@ -12,7 +12,9 @@ const COLUMNS = [
   "age",
   "gender",
   "location",
-  "isMember",
+  "isFacilitator",
+  "affiliation",
+  "role",
   "panelQuestion",
   "smsStatus",
   "attended",
@@ -47,7 +49,9 @@ export async function GET(request: NextRequest) {
       COLUMNS.map((column) => {
         if (column === "createdAt") return csvCell(row.createdAt);
         if (column === "checkedInAt") return csvCell(row.checkedInAt ?? "");
-        if (column === "isMember") return csvCell(row.isMember ? "Yes" : "No");
+        if (column === "isFacilitator") return csvCell(row.isFacilitator ? "Yes" : "No");
+        if (column === "affiliation") return csvCell(row.affiliation ?? "Not specified");
+        if (column === "role") return csvCell(row.role ?? "");
         if (column === "attended") return csvCell(row.attended ? "Yes" : "No");
         return csvCell(row[column]);
       }).join(","),
