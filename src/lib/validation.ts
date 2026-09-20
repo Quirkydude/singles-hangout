@@ -90,6 +90,13 @@ export function isEligibleAge(age: number): boolean {
   return Number.isFinite(age) && age >= EVENT.minAge && age <= MAX_AGE;
 }
 
+/**
+ * The message shown when a removed person tries to register, or when their
+ * old code is looked up. Intentionally neutral and non-accusatory.
+ */
+export const REMOVED_MESSAGE =
+  "We were unable to confirm a place for this registration, so the code is no longer valid. Please speak to a Youth Ministry leader.";
+
 export const adminLoginSchema = z.object({
   password: z.string().min(1, "Enter the admin password."),
 });

@@ -45,6 +45,7 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
       isFacilitator: true,
       affiliation: true,
       role: true,
+      removed: true,
       age: true,
       smsStatus: true,
       createdAt: true,
@@ -52,6 +53,7 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
   });
 
   if (!registration) notFound();
+  if (registration.removed) notFound();
 
   const qrSvg = await renderTicketQr(registration.code);
   const ticketUrl = getTicketUrl(registration.code);

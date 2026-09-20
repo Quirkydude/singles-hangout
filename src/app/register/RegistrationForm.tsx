@@ -149,6 +149,7 @@ const BLOCKING_STATUSES: Array<FormState["status"]> = [
   "ineligible",
   "full",
   "closed",
+  "removed",
 ];
 
 export function RegistrationForm({ spotsLeft }: { spotsLeft: number }) {

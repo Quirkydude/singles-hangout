@@ -87,6 +87,7 @@ export default async function AdminDashboardPage() {
         isFacilitator: true,
         affiliation: true,
         role: true,
+        removed: true,
         age: true,
         gender: true,
         panelQuestion: true,
@@ -153,7 +154,20 @@ export default async function AdminDashboardPage() {
           value={settings.spotsLeft}
           hint={settings.isFull ? "Registration is full" : "Still accepting"}
         />
-        <StatCard label="Checked in" value={attendedCount} hint="At the door" />
+        <StatCard
+          label="Checked in"
+          value={attendedCount}
+          hint="At the door"
+        />
+        <StatCard
+          label="Removed"
+          value={settings.removedCount}
+          hint={
+            settings.removedCount > 0
+              ? "Blocked from re-registering"
+              : "Nobody removed"
+          }
+        />
         <StatCard
           label="SMS failed"
           value={smsFailedCount}

@@ -4,6 +4,7 @@ import { EVENT } from "@/lib/event";
 
 const NAV = [
   { href: "/admin", label: "Dashboard" },
+  { href: "/admin/manage", label: "Manage" },
   { href: "/admin/checkin", label: "Check-in" },
   { href: "/admin/settings", label: "Settings" },
 ];

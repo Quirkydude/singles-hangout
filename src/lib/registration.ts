@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { generateCode } from "@/lib/codes";
+import { generateCode, normalizeCodeInput } from "@/lib/codes";
 import { sendSms } from "@/lib/moolre";
 import { EVENT, getTicketUrl } from "@/lib/event";
 import { getEventSettings } from "@/lib/settings";
@@ -69,6 +69,110 @@ export async function sendRegistrationSms(registration: {
   return { ok: result.ok, message: result.message };
 }
 
+/**
+ * Sent when an organizer removes someone.
+ *
+ * Deliberately neutral: it does not state the internal reason, so the
+ * person is not told something they may find hurtful or share publicly.
+ * The code is not repeated - it is now invalid.
+ */
+export function buildRemovalSms(fullName: string): string {
+  const firstName = fullName.trim().split(/\s+/)[0] || "there";
+  return `Hi ${firstName}, thank you for registering for ${EVENT.name}. We're unable to confirm your place for this edition, so your registration code is no longer valid. Please contact 0538118529.`;
+}
+
+/** Sent if an organizer restores someone they removed by mistake. */
+export function buildRestoreSms(fullName: string, code: string): string {
+  const firstName = fullName.trim().split(/\s+/)[0] || "there";
+  const base = `Hi ${firstName}, good news - your place at ${EVENT.name} is confirmed again. Your code: ${code}. ${EVENT.dateShort}, ${EVENT.timeLabel}, ${EVENT.venue}.`;
+  const withLink = `${base} ${getTicketUrl(code)}`;
+  if (withLink.length <= MAX_SMS_LENGTH) return withLink;
+  return base;
+}
+
+export type RemoveResult = {
+  code: string;
+  fullName: string;
+  smsSent: boolean;
+};
+
+/**
+ * Soft-removes registrations: the row is kept (so the phone number stays
+ * taken and the spot is freed) but the person is marked removed.
+ *
+ * Already-removed rows are skipped, so re-running is safe and does not send
+ * a second SMS.
+ */
+export async function removeRegistrations(
+  codes: string[],
+  reason?: string | null,
+): Promise<RemoveResult[]> {
+  const normalized = codes.map(normalizeCodeInput).filter(Boolean) as string[];
+  if (normalized.length === 0) return [];
+
+  const targets = await prisma.registration.findMany({
+    where: { code: { in: normalized }, removed: false },
+    select: { id: true, code: true, fullName: true, phone: true },
+  });
+
+  const results: RemoveResult[] = [];
+
+  for (const target of targets) {
+    await prisma.registration.update({
+      where: { id: target.id },
+      data: {
+        removed: true,
+        removedAt: new Date(),
+        removedReason: reason?.trim() ? reason.trim().slice(0, 200) : null,
+      },
+    });
+
+    const sms = await sendSms(target.phone, buildRemovalSms(target.fullName));
+    results.push({
+      code: target.code,
+      fullName: target.fullName,
+      smsSent: sms.ok,
+    });
+  }
+
+  return results;
+}
+
+/** Undoes a removal and re-sends the original code. */
+export async function restoreRegistrations(
+  codes: string[],
+): Promise<RemoveResult[]> {
+  const normalized = codes.map(normalizeCodeInput).filter(Boolean) as string[];
+  if (normalized.length === 0) return [];
+
+  const targets = await prisma.registration.findMany({
+    where: { code: { in: normalized }, removed: true },
+    select: { id: true, code: true, fullName: true, phone: true },
+  });
+
+  const results: RemoveResult[] = [];
+
+  for (const target of targets) {
+    await prisma.registration.update({
+      where: { id: target.id },
+      data: { removed: false, removedAt: null, removedReason: null },
+    });
+
+    // Same delivery bookkeeping as a normal send.
+    const sms = await sendSms(
+      target.phone,
+      buildRestoreSms(target.fullName, target.code),
+    );
+    results.push({
+      code: target.code,
+      fullName: target.fullName,
+      smsSent: sms.ok,
+    });
+  }
+
+  return results;
+}
+
 export type RegisterResult =
   | {
       outcome: "created" | "resent";
@@ -79,6 +183,8 @@ export type RegisterResult =
   | { outcome: "invalid_phone" }
   | { outcome: "closed" }
   | { outcome: "full" }
+  /** Removed by an organizer: cannot register again for this edition. */
+  | { outcome: "removed" }
   | { outcome: "error"; message: string };
 
 type RegisterInput = {
@@ -121,12 +227,25 @@ export async function registerAttendee(
   }
 
   // Already registered? Re-send the existing code instead of duplicating.
+  // Checked before the capacity gate so a returning registrant always gets
+  // their original code back.
   const existing = await prisma.registration.findUnique({
     where: { phone },
-    select: { id: true, code: true, fullName: true, phone: true },
+    select: {
+      id: true,
+      code: true,
+      fullName: true,
+      phone: true,
+      removed: true,
+    },
   });
 
   if (existing) {
+    // Deliberately does NOT re-send a code. Texting them a code we have
+    // just invalidated would be worse than saying nothing.
+    if (existing.removed) {
+      return { outcome: "removed" };
+    }
     const sms = await sendRegistrationSms(existing);
     return { outcome: "resent", code: existing.code, smsSent: sms.ok };
   }
@@ -154,7 +273,9 @@ export async function registerAttendee(
 
     try {
       const created = await prisma.$transaction(async (tx) => {
-        const count = await tx.registration.count();
+        const count = await tx.registration.count({
+          where: { removed: false },
+        });
         if (count >= settings.capacity) return null;
 
         return tx.registration.create({

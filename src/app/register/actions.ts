@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { registrationSchema } from "@/lib/validation";
+import { registrationSchema, REMOVED_MESSAGE } from "@/lib/validation";
 import { normalizeGhanaPhone } from "@/lib/phone";
 import { registerAttendee } from "@/lib/registration";
 import { EVENT } from "@/lib/event";
@@ -128,6 +128,12 @@ export async function registerAction(
         status: "error",
         message: "Please enter a valid Ghanaian mobile number.",
         fieldErrors: { phone: "Enter a valid Ghanaian mobile number." },
+        values,
+      };
+    case "removed":
+      return {
+        status: "removed",
+        message: REMOVED_MESSAGE,
         values,
       };
     case "full":

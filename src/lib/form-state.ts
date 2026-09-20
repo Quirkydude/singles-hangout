@@ -11,7 +11,7 @@ export type FieldErrors = Partial<Record<string, string>>;
 // --- Registration form ------------------------------------------------------
 
 export type FormState = {
-  status: "idle" | "error" | "ineligible" | "full" | "closed";
+  status: "idle" | "error" | "ineligible" | "full" | "closed" | "removed";
   message?: string;
   fieldErrors?: FieldErrors;
   /** Echoed back so a failed submit does not wipe what the user typed. */

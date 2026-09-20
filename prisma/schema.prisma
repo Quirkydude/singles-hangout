@@ -33,11 +33,20 @@ model Registration {
   smsSentAt       DateTime?
   attended        Boolean   @default(false)
   checkedInAt     DateTime?
+
+  // Removed by an organizer: the row is kept so the phone number stays
+  // taken (they cannot register again) and the spot is freed. Their code
+  // is treated as invalid everywhere.
+  removed         Boolean   @default(false)
+  removedAt       DateTime?
+  removedReason   String?
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([createdAt])
   @@index([attended])
+  @@index([removed])
 }
 
 // Simple key/value settings so capacity and registration open/closed

@@ -12,7 +12,7 @@ import {
 } from "@/lib/auth";
 import { normalizeCodeInput } from "@/lib/codes";
 import { SETTING_KEYS } from "@/lib/settings";
-import { sendRegistrationSms } from "@/lib/registration";
+import { sendRegistrationSms, removeRegistrations, restoreRegistrations } from "@/lib/registration";
 import type { AdminActionState } from "@/lib/form-state";
 
 function safeNext(value: string | null): string {
@@ -71,10 +71,24 @@ export async function resendSmsAction(
 
   const registration = await prisma.registration.findUnique({
     where: { code },
-    select: { id: true, code: true, fullName: true, phone: true },
+    select: {
+      id: true,
+      code: true,
+      fullName: true,
+      phone: true,
+      removed: true,
+    },
   });
   if (!registration) {
     return { status: "error", message: "Registration not found." };
+  }
+
+  // Re-sending an invalidated code would be misleading.
+  if (registration.removed) {
+    return {
+      status: "error",
+      message: `${registration.fullName} was removed, so this code is no longer valid. Restore them first if that was a mistake.`,
+    };
   }
 
   const result = await sendRegistrationSms(registration);
@@ -97,10 +111,25 @@ export async function checkInAction(
 
   const registration = await prisma.registration.findUnique({
     where: { code },
-    select: { id: true, code: true, fullName: true, attended: true, phone: true },
+    select: {
+      id: true,
+      code: true,
+      fullName: true,
+      attended: true,
+      phone: true,
+      removed: true,
+    },
   });
   if (!registration) {
     return { status: "error", message: `No registration found for ${code}.` };
+  }
+
+  // A removed person must be turned away, not checked in.
+  if (registration.removed) {
+    return {
+      status: "error",
+      message: `Registration ${code} is no longer valid. Please direct ${registration.fullName} to a Youth Ministry leader.`,
+    };
   }
 
   if (registration.attended) {
@@ -121,6 +150,83 @@ export async function checkInAction(
   return {
     status: "success",
     message: `Checked in: ${registration.fullName} (${registration.code}).`,
+  };
+}
+
+export async function removeRegistrationsAction(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const codes = formData
+    .getAll("codes")
+    .map((value) => String(value))
+    .filter(Boolean);
+
+  if (codes.length === 0) {
+    return { status: "error", message: "Select at least one person to remove." };
+  }
+
+  const reason = String(formData.get("reason") ?? "");
+  const results = await removeRegistrations(codes, reason);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/manage");
+  revalidatePath("/");
+
+  if (results.length === 0) {
+    return {
+      status: "error",
+      message: "Nobody was removed - they may have been removed already.",
+    };
+  }
+
+  const failed = results.filter((r) => !r.smsSent);
+  const base = `Removed ${results.length} ${results.length === 1 ? "person" : "people"}. Their spots are free and they cannot register again.`;
+
+  return {
+    status: failed.length > 0 ? "error" : "success",
+    message:
+      failed.length > 0
+        ? `${base} However, ${failed.length} SMS did not send - check the logs and contact them directly.`
+        : `${base} SMS sent to all of them.`,
+  };
+}
+
+export async function restoreRegistrationsAction(
+  _prevState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const codes = formData
+    .getAll("codes")
+    .map((value) => String(value))
+    .filter(Boolean);
+
+  if (codes.length === 0) {
+    return { status: "error", message: "Select at least one person to restore." };
+  }
+
+  const results = await restoreRegistrations(codes);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/manage");
+  revalidatePath("/");
+
+  if (results.length === 0) {
+    return {
+      status: "error",
+      message: "Nobody was restored - they may not have been removed.",
+    };
+  }
+
+  const failed = results.filter((r) => !r.smsSent);
+  const base = `Restored ${results.length} ${results.length === 1 ? "person" : "people"}. Their spot is taken again.`;
+
+  return {
+    status: failed.length > 0 ? "error" : "success",
+    message:
+      failed.length > 0
+        ? `${base} However, ${failed.length} SMS did not send - send them their code manually via Resend SMS.`
+        : `${base} Their original code was texted back to them.`,
   };
 }
 

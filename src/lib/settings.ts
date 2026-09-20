@@ -9,7 +9,10 @@ export const SETTING_KEYS = {
 export type EventSettings = {
   capacity: number;
   registrationOpen: boolean;
+  /** Active (not removed) registrations. Removed people do not hold a spot. */
   registeredCount: number;
+  /** Removed registrations, kept on file so they cannot sign up again. */
+  removedCount: number;
   spotsLeft: number;
   isFull: boolean;
 };
@@ -28,13 +31,15 @@ function parseOpen(value: string | undefined): boolean {
 }
 
 export async function getEventSettings(): Promise<EventSettings> {
-  const [rows, registeredCount] = await Promise.all([
+  const [rows, registeredCount, removedCount] = await Promise.all([
     prisma.setting.findMany({
       where: {
         key: { in: [SETTING_KEYS.capacity, SETTING_KEYS.registrationOpen] },
       },
     }),
-    prisma.registration.count(),
+    // Removed people are deliberately excluded: their spot is freed.
+    prisma.registration.count({ where: { removed: false } }),
+    prisma.registration.count({ where: { removed: true } }),
   ]);
 
   const map = new Map(rows.map((row) => [row.key, row.value]));
@@ -46,6 +51,7 @@ export async function getEventSettings(): Promise<EventSettings> {
     capacity,
     registrationOpen,
     registeredCount,
+    removedCount,
     spotsLeft,
     isFull: spotsLeft === 0,
   };
@@ -61,6 +67,7 @@ export async function getEventSettingsSafe(): Promise<EventSettings> {
       capacity: EVENT.defaultCapacity,
       registrationOpen: true,
       registeredCount: 0,
+      removedCount: 0,
       spotsLeft: EVENT.defaultCapacity,
       isFull: false,
     };

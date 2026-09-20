@@ -19,6 +19,9 @@ const COLUMNS = [
   "smsStatus",
   "attended",
   "checkedInAt",
+  "removed",
+  "removedAt",
+  "removedReason",
   "createdAt",
 ] as const;
 
@@ -53,6 +56,8 @@ export async function GET(request: NextRequest) {
         if (column === "affiliation") return csvCell(row.affiliation ?? "Not specified");
         if (column === "role") return csvCell(row.role ?? "");
         if (column === "attended") return csvCell(row.attended ? "Yes" : "No");
+        if (column === "removed") return csvCell(row.removed ? "Yes" : "No");
+        if (column === "removedAt") return csvCell(row.removedAt ?? "");
         return csvCell(row[column]);
       }).join(","),
     );

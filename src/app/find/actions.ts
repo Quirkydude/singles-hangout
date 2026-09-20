@@ -17,9 +17,9 @@ export async function findTicketAction(
     const code = normalizeCodeInput(rawCode);
     const found = await prisma.registration.findUnique({
       where: { code },
-      select: { code: true },
-    });
-    if (!found) {
+    select: { code: true, removed: true },
+  });
+    if (!found || found.removed) {
       return {
         status: "notfound",
         message: "We could not find a registration with that code.",
@@ -38,9 +38,9 @@ export async function findTicketAction(
     }
     const found = await prisma.registration.findUnique({
       where: { phone },
-      select: { code: true },
+      select: { code: true, removed: true },
     });
-    if (!found) {
+    if (!found || found.removed) {
       return {
         status: "notfound",
         message: "That number is not registered yet.",
