@@ -14,6 +14,15 @@ export type AffiliationValue = (typeof AFFILIATION_VALUES)[number];
 export const ROLE_VALUES = ["organizer", "protocol", "participant"] as const;
 export type RoleValue = (typeof ROLE_VALUES)[number];
 
+/**
+ * Internal-only role for the media team.
+ *
+ * Deliberately NOT part of `ROLE_VALUES`, so it cannot be produced by the
+ * public registration form (the zod enum rejects it) and is never offered
+ * as a choice. It is assigned by an administrator instead.
+ */
+export const MEDIA_ROLE = "Media";
+
 /** Shown in the step where we ask where they fellowship. */
 export const AFFILIATION_OPTIONS: Array<{
   value: AffiliationValue;

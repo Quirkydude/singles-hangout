@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { EVENT, getMapsUrl, getTicketUrl } from "@/lib/event";
 import { normalizeCodeInput } from "@/lib/codes";
 import { formatPhoneForDisplay, maskPhone } from "@/lib/phone";
+import { MEDIA_ROLE } from "@/lib/registration-options";
 import { renderTicketQr } from "@/lib/qr";
 import { ShareActions } from "./ShareActions";
 
@@ -132,9 +133,11 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
                     Attending as
                   </dt>
                   <dd className="mt-0.5 text-ink">
-                    {registration.isFacilitator
-                      ? "Facilitator"
-                      : (registration.role ?? "Participant")}
+                    {registration.role === MEDIA_ROLE
+                      ? "Attending"
+                      : registration.isFacilitator
+                        ? "Facilitator"
+                        : (registration.role ?? "Participant")}
                   </dd>
                 </div>
                 <div>
@@ -142,9 +145,11 @@ export default async function TicketPage({ params, searchParams }: PageProps) {
                     Fellowship
                   </dt>
                   <dd className="mt-0.5 text-ink">
-                    {registration.isFacilitator
-                      ? "Facilitating"
-                      : (registration.affiliation ?? "Not specified")}
+                    {registration.role === MEDIA_ROLE
+                      ? (registration.affiliation ?? "Not specified")
+                      : registration.isFacilitator
+                        ? "Facilitating"
+                        : (registration.affiliation ?? "Not specified")}
                   </dd>
                 </div>
                 <div>

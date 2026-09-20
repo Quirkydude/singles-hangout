@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getEventSettings } from "@/lib/settings";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { EVENT } from "@/lib/event";
+import { MEDIA_ROLE } from "@/lib/registration-options";
 import { ResendSmsButton } from "./ResendSmsButton";
 
 export const dynamic = "force-dynamic";
@@ -100,28 +101,38 @@ export default async function AdminDashboardPage() {
     prisma.registration.count({ where: { smsStatus: "FAILED" } }),
     prisma.registration.groupBy({
       by: ["isFacilitator"],
+      where: { removed: false },
       _count: { _all: true },
     }),
     prisma.registration.groupBy({
       by: ["affiliation"],
+      where: { removed: false },
       _count: { _all: true },
     }),
     prisma.registration.groupBy({
       by: ["role"],
+      where: { removed: false },
       _count: { _all: true },
     }),
   ]);
 
   const facilitatorCount =
     facilitatorRows.find((r) => r.isFacilitator)?._count._all ?? 0;
-  const participantOnlyCount =
-    facilitatorRows.find((r) => !r.isFacilitator)?._count._all ?? 0;
 
   const affiliationCounts = new Map(
     affiliationRows.map((r) => [r.affiliation ?? "Not specified", r._count._all]),
   );
   const roleCounts = new Map(
     roleRows.map((r) => [r.role ?? "Not specified", r._count._all]),
+  );
+
+  // The media team are pulled out of the attendee pool so the three figures in
+  // "Taking part as" stay meaningful, and so their total always reconciles with
+  // the active headcount shown in the "Registered" card.
+  const mediaCount = roleCounts.get(MEDIA_ROLE) ?? 0;
+  const attendeeCount = Math.max(
+    0,
+    settings.registeredCount - facilitatorCount - mediaCount,
   );
 
   return (
@@ -185,6 +196,7 @@ export default async function AdminDashboardPage() {
               value: roleCounts.get("Protocol Member") ?? 0,
             },
             { label: "Participant", value: roleCounts.get("Participant") ?? 0 },
+            { label: "Media", value: roleCounts.get(MEDIA_ROLE) ?? 0 },
           ]}
         />
         <Breakdown
@@ -208,8 +220,9 @@ export default async function AdminDashboardPage() {
         <Breakdown
           title="Taking part as"
           rows={[
+            { label: "Attendees", value: attendeeCount },
             { label: "Facilitators", value: facilitatorCount },
-            { label: "Attendees", value: participantOnlyCount },
+            { label: "Media", value: mediaCount },
           ]}
         />
         <div className="flex flex-col justify-center rounded-2xl border border-line bg-white px-5 py-4 text-sm">
@@ -275,13 +288,11 @@ export default async function AdminDashboardPage() {
                       <td className="px-4 py-3 text-ink-muted">{row.location}</td>
                       <td className="px-4 py-3 text-ink-muted">{row.age}</td>
                       <td className="px-4 py-3 text-ink-muted">
-                        {row.isFacilitator ? (
-                          <span className="font-semibold text-ink">
-                            Facilitator
-                          </span>
-                        ) : (
-                          (row.role ?? "Participant")
-                        )}
+                        {row.role === MEDIA_ROLE
+                          ? "Media"
+                          : row.isFacilitator
+                            ? "Facilitator"
+                            : (row.role ?? "Participant")}
                       </td>
                       <td className="px-4 py-3 text-ink-muted">
                         {row.isFacilitator
@@ -348,9 +359,11 @@ export default async function AdminDashboardPage() {
                       {row.location}
                     </span>
                     <span className="rounded-full bg-cream px-2 py-0.5 text-ink-muted">
-                      {row.isFacilitator
-                        ? "Facilitator"
-                        : (row.role ?? "Participant")}
+                      {row.role === MEDIA_ROLE
+                        ? "Media"
+                        : row.isFacilitator
+                          ? "Facilitator"
+                          : (row.role ?? "Participant")}
                     </span>
                     <span className="rounded-full bg-cream px-2 py-0.5 text-ink-muted">
                       {row.isFacilitator
