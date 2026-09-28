@@ -10,93 +10,40 @@
  * the organizers can line up a question with its answer during analysis.
  * As requested, questions 4, 11, 13-18 and 21 use a 5-point scale (stars, or
  * Strongly agree -> Strongly disagree) and question 20 keeps its 1-10 scale.
+ * The shapes and the scales themselves are shared with the panelists' form -
+ * see `evaluation-core.ts`.
  *
  * Ratings are stored as whole numbers, never as words, so averages and
  * distributions need no clean-up before analysis.
  */
 
 import { EVENT } from "@/lib/event";
+import {
+  answerLabelOf,
+  questionTagOf,
+  ratedQuestionsOf,
+  type ChoiceOption,
+  type FeedbackQuestion,
+  type FeedbackSection,
+} from "@/lib/evaluation-core";
 
-export type ChoiceOption = {
-  readonly value: string | number;
-  readonly label: string;
-  readonly hint?: string;
-};
-
-/** Every question is one of these shapes. */
-export type FeedbackQuestion =
-  | {
-      readonly kind: "choice";
-      readonly id: string;
-      readonly label: string;
-      readonly help?: string;
-      readonly options: readonly ChoiceOption[];
-    }
-  | {
-      readonly kind: "stars";
-      readonly id: string;
-      readonly label: string;
-      readonly help?: string;
-      /** Wording for the two ends of the 5-star scale. */
-      readonly lowLabel: string;
-      readonly highLabel: string;
-    }
-  | {
-      readonly kind: "agree";
-      readonly id: string;
-      readonly label: string;
-      readonly help?: string;
-    }
-  | {
-      readonly kind: "scale10";
-      readonly id: string;
-      readonly label: string;
-      readonly help?: string;
-      readonly lowLabel: string;
-      readonly highLabel: string;
-    }
-  | {
-      readonly kind: "text";
-      readonly id: string;
-      readonly label: string;
-      readonly help?: string;
-      readonly placeholder?: string;
-      /** Optional questions may be left blank. */
-      readonly required: boolean;
-      readonly multiline: boolean;
-      readonly maxLength: number;
-    };
-
-export type FeedbackSection = {
-  readonly letter: string;
-  readonly title: string;
-  readonly intro?: string;
-  readonly questions: readonly FeedbackQuestion[];
-};
-
-/** 5-point agree/disagree scale used by the "was / were" statements. */
-export const AGREE_SCALE = [
-  { value: 1, label: "Strongly disagree" },
-  { value: 2, label: "Disagree" },
-  { value: 3, label: "Neutral" },
-  { value: 4, label: "Agree" },
-  { value: 5, label: "Strongly agree" },
-] as const;
-
-/** Star ratings always run from 1 (low) to 5 (high). */
-export const STAR_VALUES = [1, 2, 3, 4, 5] as const;
-
-/** The 1-10 scale, used by the "how likely are you to recommend" question. */
-export const SCORE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
-
-/** Words for the 5-point rating scales, lowest first. */
-export const RATING_WORDS = [
-  "Poor",
-  "Fair",
-  "Good",
-  "Very Good",
-  "Excellent",
-] as const;
+// The question shapes, the 5-point scales and the 1-10 scale are shared with
+// the panelists' form, so they now live in `evaluation-core.ts` and are
+// re-exported here: every existing `@/lib/feedback-questions` import keeps
+// working, and a rating means the same thing on both forms.
+export {
+  AGREE_SCALE,
+  RATING_WORDS,
+  SCORE_VALUES,
+  STAR_VALUES,
+  averageLabel,
+  questionMax,
+} from "@/lib/evaluation-core";
+export type {
+  ChoiceOption,
+  FeedbackQuestion,
+  FeedbackSection,
+} from "@/lib/evaluation-core";
 
 /** Question 8 keeps the exact wording the organizers used on the form. */
 export const FACILITATOR_RATING_OPTIONS: readonly ChoiceOption[] = [
@@ -402,8 +349,7 @@ export function questionTag(id: FeedbackQuestionId): string {
  * type (the form, the admin dashboard, the CSV export).
  */
 export function questionTagFor(id: string): string {
-  const index = FEEDBACK_QUESTIONS.findIndex((question) => question.id === id);
-  return index === -1 ? "Q?" : `Q${index + 1}`;
+  return questionTagOf(FEEDBACK_QUESTIONS, id);
 }
 
 /** Looks a question up by id. Throws on a typo, so mistakes fail loudly. */
@@ -413,55 +359,16 @@ export function questionById(id: FeedbackQuestionId): FeedbackQuestion {
   return question;
 }
 
-/** The highest value a rating question can take (1-5, or 1-10 for Q20). */
-export function questionMax(question: FeedbackQuestion): number {
-  return question.kind === "scale10" ? 10 : 5;
-}
-
 /** Questions whose answers are numbers, used for averages and distributions. */
 export const RATED_QUESTIONS: readonly FeedbackQuestion[] =
-  FEEDBACK_QUESTIONS.filter(
-    (question) =>
-      question.kind === "stars" ||
-      question.kind === "agree" ||
-      question.kind === "scale10" ||
-      (question.kind === "choice" &&
-        question.options.every((option) => typeof option.value === "number")),
-  );
+  ratedQuestionsOf(FEEDBACK_QUESTIONS);
 
 /** Turns a stored answer into words for the admin dashboard and CSV export. */
 export function answerLabel(
   id: string,
   value: string | number | null | undefined,
 ): string {
-  const question = FEEDBACK_QUESTIONS.find((item) => item.id === id);
-  if (!question || value === null || value === undefined || value === "") {
-    return "";
-  }
-
-  if (question.kind === "choice") {
-    const option = question.options.find(
-      (item) => String(item.value) === String(value),
-    );
-    return option ? option.label : String(value);
-  }
-
-  if (question.kind === "agree") {
-    const step = AGREE_SCALE.find((item) => item.value === Number(value));
-    return step ? `${step.label} (${value}/5)` : String(value);
-  }
-
-  if (question.kind === "stars" || question.kind === "scale10") {
-    return `${value} / ${questionMax(question)}`;
-  }
-
-  return String(value);
-}
-
-/** "4.3 / 5" style summary used in the admin dashboard. */
-export function averageLabel(total: number, count: number, max: number): string {
-  if (count === 0) return "-";
-  return `${(total / count).toFixed(1)} / ${max}`;
+  return answerLabelOf(FEEDBACK_QUESTIONS, id, value);
 }
 
 

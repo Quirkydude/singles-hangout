@@ -31,9 +31,14 @@ export type FindState = {
 
 export const initialFindState: FindState = { status: "idle" };
 
-// --- Evaluation form --------------------------------------------------------
+// --- Evaluation forms -------------------------------------------------------
 
-export type FeedbackState = {
+/**
+ * The state shape both evaluation forms share, so one wizard component can run
+ * either one: the participants' form and the panelists' form differ in their
+ * questions, not in how a rejected answer travels back to the screen.
+ */
+export type EvaluationState = {
   status: "idle" | "error";
   message?: string;
   fieldErrors?: FieldErrors;
@@ -43,7 +48,15 @@ export type FeedbackState = {
   values?: Record<string, string>;
 };
 
+/** The participants' evaluation form. */
+export type FeedbackState = EvaluationState;
+
 export const initialFeedbackState: FeedbackState = { status: "idle" };
+
+/** The panelists' evaluation form. */
+export type PanelFeedbackState = EvaluationState;
+
+export const initialPanelFeedbackState: PanelFeedbackState = { status: "idle" };
 
 // --- Admin ------------------------------------------------------------------
 

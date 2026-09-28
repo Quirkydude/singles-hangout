@@ -125,3 +125,57 @@ model Feedback {
 
   @@index([createdAt])
 }
+
+/// Singles Connect Hangout - Panelists' Evaluation Form.
+///
+/// One response per panelist: the name is folded into `panelistKey`
+/// (lower-cased, spacing flattened) and re-submitting under the same name
+/// updates that answer sheet instead of creating a second one.
+///
+/// Unlike `Feedback` there is no phone number and no SMS bookkeeping here: the
+/// panelists are a known, small group who are thanked in person, and the form
+/// they were given asks for their name only.
+model PanelFeedback {
+  id           String @id @default(cuid())
+  panelistName String
+  panelistKey  String @unique
+
+  // Section A - preparation & organization
+  topicClarity  Int
+  prepAdequacy  Int
+  preEventComms Int
+
+  // Section B - panel moderation & flow
+  moderatorSteering   Int
+  timeAdequacy        String
+  contributionBalance Int
+  questionRelevance   Int
+
+  // Section C - audience & participant engagement
+  audienceEngagement Int
+  audienceQuestions  Int
+  audienceConnection Int
+
+  // Section D - venue, date & time
+  panelDateTime      Int
+  venueSuitability   Int
+  technicalLogistics Int
+
+  // Section E - overall program experience
+  overallOrganization Int
+  panelistHospitality Int
+  objectivesAchieved  String
+
+  // Section F - reflection & recommendations
+  wentWell        String
+  challenge       String
+  topicSuggestion String
+  overallSuccess  Int
+  serveAgain      String
+  suggestions     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}

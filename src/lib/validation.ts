@@ -5,8 +5,14 @@ import { AFFILIATION_VALUES, ROLE_VALUES } from "@/lib/registration-options";
 import {
   questionById,
   type FeedbackField,
+  type FeedbackQuestion,
   type FeedbackQuestionId,
 } from "@/lib/feedback-questions";
+import {
+  panelQuestionById,
+  type PanelFeedbackField,
+  type PanelQuestionId,
+} from "@/lib/panel-feedback-questions";
 
 const MAX_AGE = 120;
 
@@ -111,11 +117,13 @@ export const adminLoginSchema = z.object({
 /**
  * Choice answers are validated against exactly the options the form offers, so
  * an option can never be added to the UI without being accepted here.
+ *
+ * The question lookup is kept separate from the rule itself: both
+ * questionnaires share the rule, each with its own list of questions.
  */
-function choiceField(id: FeedbackQuestionId): z.ZodTypeAny {
-  const question = questionById(id);
+function choiceSchema(question: FeedbackQuestion): z.ZodTypeAny {
   if (question.kind !== "choice") {
-    throw new Error(`"${id}" is not a choice question.`);
+    throw new Error(`"${question.id}" is not a choice question.`);
   }
 
   const values = question.options.map((option) => option.value);
@@ -133,6 +141,10 @@ function choiceField(id: FeedbackQuestionId): z.ZodTypeAny {
   return z.enum(values as [string, ...string[]], {
     message: "Please choose one of the options.",
   });
+}
+
+function choiceField(id: FeedbackQuestionId): z.ZodTypeAny {
+  return choiceSchema(questionById(id));
 }
 
 /** Every 5-point scale: the stars, the agree/disagree statements, and Q8. */
@@ -156,10 +168,9 @@ function scoreField(): z.ZodTypeAny {
 }
 
 /** Open text. Required questions must actually say something. */
-function textField(id: FeedbackQuestionId): z.ZodTypeAny {
-  const question = questionById(id);
+function textSchema(question: FeedbackQuestion): z.ZodTypeAny {
   if (question.kind !== "text") {
-    throw new Error(`"${id}" is not a text question.`);
+    throw new Error(`"${question.id}" is not a text question.`);
   }
 
   const tooLong = `Please keep your answer under ${question.maxLength} characters.`;
@@ -178,6 +189,10 @@ function textField(id: FeedbackQuestionId): z.ZodTypeAny {
 
   // Optional questions arrive as an empty string rather than being missing.
   return base.default("");
+}
+
+function textField(id: FeedbackQuestionId): z.ZodTypeAny {
+  return textSchema(questionById(id));
 }
 
 /**
@@ -254,3 +269,80 @@ export type FeedbackAnswers = Record<FeedbackField, string | number>;
 export const feedbackSchema = z.object(
   feedbackFieldSchemas,
 ) as unknown as z.ZodType<FeedbackAnswers>;
+
+// --- Singles Connect Hangout panelists' evaluation form ---------------------
+
+/**
+ * The panelists' form asks a different set of questions, so its rules are
+ * looked up in `panel-feedback-questions.ts`. The rules themselves are the
+ * ones above; only which question they are attached to changes.
+ */
+function panelChoiceField(id: PanelQuestionId): z.ZodTypeAny {
+  return choiceSchema(panelQuestionById(id));
+}
+
+function panelTextField(id: PanelQuestionId): z.ZodTypeAny {
+  return textSchema(panelQuestionById(id));
+}
+
+/**
+ * One rule per answer, keyed by `PanelFeedbackField`: TypeScript fails the
+ * build if a question is added to `panel-feedback-questions.ts` without a rule
+ * here, or if a rule is left behind after a question is removed.
+ */
+const panelFeedbackFieldSchemas: Record<PanelFeedbackField, z.ZodTypeAny> = {
+  // Who is answering: the name on the panel list.
+  panelistName: z
+    .string({ message: "Please enter your name." })
+    .trim()
+    .min(2, "Please enter your name.")
+    .max(120, "That name is too long."),
+
+  // Section A - preparation & organization
+  topicClarity: ratingField(),
+  prepAdequacy: ratingField(),
+  preEventComms: ratingField(),
+
+  // Section B - panel moderation & flow
+  moderatorSteering: panelChoiceField("moderatorSteering"),
+  timeAdequacy: panelChoiceField("timeAdequacy"),
+  contributionBalance: ratingField(),
+  questionRelevance: ratingField(),
+
+  // Section C - audience & participant engagement
+  audienceEngagement: panelChoiceField("audienceEngagement"),
+  audienceQuestions: ratingField(),
+  audienceConnection: ratingField(),
+
+  // Section D - venue, date & time
+  panelDateTime: ratingField(),
+  venueSuitability: ratingField(),
+  technicalLogistics: ratingField(),
+
+  // Section E - overall program experience
+  overallOrganization: ratingField(),
+  panelistHospitality: ratingField(),
+  objectivesAchieved: panelChoiceField("objectivesAchieved"),
+
+  // Section F - reflection & recommendations
+  wentWell: panelTextField("wentWell"),
+  challenge: panelTextField("challenge"),
+  topicSuggestion: panelTextField("topicSuggestion"),
+  overallSuccess: scoreField(),
+  serveAgain: panelChoiceField("serveAgain"),
+  suggestions: panelTextField("suggestions"),
+};
+
+/** Every answer the panelists' form collects, ratings already turned into numbers. */
+export type PanelFeedbackAnswers = Record<
+  PanelFeedbackField,
+  string | number
+>;
+
+/**
+ * The panelists' answers as submitted, with the ratings coerced to numbers.
+ * Widened through `unknown` for the same reason as `feedbackSchema` above.
+ */
+export const panelFeedbackSchema = z.object(
+  panelFeedbackFieldSchemas,
+) as unknown as z.ZodType<PanelFeedbackAnswers>;

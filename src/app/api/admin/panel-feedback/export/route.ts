@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ADMIN_COOKIE, verifySessionToken } from "@/lib/auth";
+import type { FeedbackQuestion } from "@/lib/evaluation-core";
 import {
-  FEEDBACK_QUESTIONS,
-  answerLabel,
-  questionTagFor,
-  type FeedbackQuestion,
-} from "@/lib/feedback-questions";
+  PANEL_QUESTIONS,
+  panelAnswerLabel,
+  panelQuestionTagFor,
+} from "@/lib/panel-feedback-questions";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,71 +24,66 @@ function csvCell(value: unknown): string {
 
 /**
  * Ratings stay as numbers so the columns can be averaged in a spreadsheet;
- * fixed choices keep their wording so the sheet reads well on its own.
+ * the worded choices ("Just right", "Yes") keep their wording so the sheet
+ * reads well on its own.
  */
-function answerCell(question: FeedbackQuestion, raw: string | number | null): string {
+function answerCell(
+  question: FeedbackQuestion,
+  raw: string | number | null,
+): string {
   if (raw === null || raw === "") return "";
   if (question.kind !== "choice") return String(raw);
   const numeric = question.options.every(
     (option) => typeof option.value === "number",
   );
-  return numeric ? String(raw) : answerLabel(question.id, raw);
+  return numeric ? String(raw) : panelAnswerLabel(question.id, raw);
 }
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(ADMIN_COOKIE)?.value;
+
   if (!(await verifySessionToken(token))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rows = await prisma.feedback.findMany({
+  const rows = await prisma.panelFeedback.findMany({
     orderBy: { createdAt: "asc" },
-    include: { registration: { select: { code: true } } },
   });
 
   const header = [
     "receivedAt",
-    "fullName",
-    "phone",
-    "registrationCode",
-    ...FEEDBACK_QUESTIONS.map(
-      (question) => `${questionTagFor(question.id)} ${question.label}`,
-    ),
-    "smsStatus",
-    "smsSentAt",
+    "panelistName",
+    ...PANEL_QUESTIONS.map((question) => {
+      const tag = panelQuestionTagFor(question.id);
+      return tag ? `${tag} ${question.label}` : question.label;
+    }),
   ];
 
   const lines = [header.map(csvCell).join(",")];
 
   for (const row of rows) {
-    // Prisma columns carry the question ids, so one lookup covers them all.
-    const answers = row as unknown as Record<string, string | number | null>;
+    const answers = row as unknown as Record<
+      string,
+      string | number | null | undefined
+    >;
 
-    const values = [
-      csvCell(row.createdAt),
-      csvCell(row.fullName),
-      csvCell(row.phone),
-      csvCell(row.registration?.code ?? ""),
-    ];
+    const values = [csvCell(row.createdAt), csvCell(row.panelistName)];
 
-    for (const question of FEEDBACK_QUESTIONS) {
+    for (const question of PANEL_QUESTIONS) {
       values.push(csvCell(answerCell(question, answers[question.id] ?? null)));
     }
-
-    values.push(csvCell(row.smsStatus));
-    values.push(csvCell(row.smsSentAt ?? ""));
 
     lines.push(values.join(","));
   }
 
-  // BOM so Excel opens UTF-8 correctly.
+  // BOM so Excel opens the accented characters and the naira/cedi symbols right.
   const body = `\uFEFF${lines.join("\r\n")}\r\n`;
   const stamp = new Date().toISOString().slice(0, 10);
 
   return new NextResponse(body, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="singles-hangout-2026-evaluations-${stamp}.csv"`,
+      "Content-Disposition": `attachment; filename="singles-hangout-2026-panelist-evaluations-${stamp}.csv"`,
       "Cache-Control": "no-store",
     },
   });

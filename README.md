@@ -152,11 +152,15 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/admin/checkin` | Door check-in with camera scanner |
 | `/admin/settings` | Change capacity, open/close registration |
 | `/admin/feedback` | Evaluation results: averages, breakdowns, comments, CSV |
+| `/admin/panel-feedback` | Panelists' evaluation results: averages, breakdowns, comments, CSV |
 | `/feedback` | Post-event evaluation form (seven steps) |
 | `/feedback/thank-you` | Confirmation screen and thank-you SMS status |
+| `/panel-feedback` | Panelists' evaluation form |
+| `/panel-feedback/thank-you` | Confirmation screen for panelists |
 | `/api/og` | Dynamic social preview image (WhatsApp) |
 | `/api/ics` | Calendar invite |
 | `/api/admin/feedback/export` | Every evaluation as CSV |
+| `/api/admin/panel-feedback/export` | Every panelist evaluation as CSV |
 
 ## How registration behaves
 
@@ -199,6 +203,40 @@ overall experience), 24 questions in all, followed by a thank-you SMS.
 `/admin/feedback` shows per-question averages, the answer mix for the fixed
 choices, the latest written answers and every response in a table.
 `/api/admin/feedback/export` downloads the whole answer sheet as CSV.
+
+## Panelists' evaluation form
+
+`/panel-feedback` is the same kind of form for the people who sat on the panel:
+six sections (preparation and organization, panel moderation and flow, audience
+and participant engagement, venue/date/time, overall program experience,
+reflection and recommendations), 22 questions in all.
+
+- The two forms share their vocabulary: the question shapes and the 5-point and
+  1-10 scales live in
+  [`src/lib/evaluation-core.ts`](src/lib/evaluation-core.ts), the controls in
+  [`src/components/EvaluationFields.tsx`](src/components/EvaluationFields.tsx)
+  and the step-by-step shell in
+  [`src/components/EvaluationWizard.tsx`](src/components/EvaluationWizard.tsx).
+  Only the questions differ, so an answer is stored, labelled and averaged the
+  same way on both.
+- The panelists' questions are in
+  [`src/lib/panel-feedback-questions.ts`](src/lib/panel-feedback-questions.ts),
+  which the form, the validator, the admin page and the CSV export all read
+  from.
+- **One evaluation per panelist.** Panelists are identified by the name they
+  type, lower-cased with spacing flattened, so re-submitting under the same
+  name replaces the earlier answer sheet rather than adding a duplicate.
+- There is **no phone number and no SMS** here: the panelists are a known,
+  small group who are thanked in person, and the form they were handed asks for
+  their name only.
+- The page is deliberately `noindex, nofollow` and is left out of
+  [`src/app/sitemap.ts`](src/app/sitemap.ts): it is a private link for the
+  panel, not a public invitation. `robots.txt` still allows crawling the rest
+  of the site normally.
+
+`/admin/panel-feedback` shows per-question averages, the answer mix for the
+fixed choices, the latest written answers and every panelist in a table.
+`/api/admin/panel-feedback/export` downloads the whole answer sheet as CSV.
 
 ## SMS
 
@@ -281,7 +319,8 @@ Use `/admin/settings` to change the cap or pause registration at any time
 without a redeploy.
 
 `/admin/feedback` lists every evaluation with per-question averages, answer
-breakdowns, the latest written answers and a CSV export.
+breakdowns, the latest written answers and a CSV export. `/admin/panel-feedback`
+does the same for the panelists' form.
 
 ## Security notes
 
