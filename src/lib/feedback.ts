@@ -113,42 +113,22 @@ export async function submitFeedback(
     phone,
     registrationId: registration?.id ?? null,
 
-    // Section A - general information
+    // Section A - about you
     ageRange: String(answers.ageRange),
     firstTime: String(answers.firstTime),
 
-    // Section B - program content
-    programRating: orNumber(answers.programRating),
-    engaging: orNumber(answers.engaging),
+    // Section B - the program & the speakers
     topicsRelevance: orNumber(answers.topicsRelevance),
-    favouritePart: String(answers.favouritePart).trim(),
-    nextTopic: String(answers.nextTopic).trim(),
-
-    // Section C - facilitators / speakers
     facilitatorRating: orNumber(answers.facilitatorRating),
     facilitatorFriendly: orNumber(answers.facilitatorFriendly),
-    facilitatorTiming: orNumber(answers.facilitatorTiming),
 
-    // Section D - location, date & time
-    dateTimeConvenience: orNumber(answers.dateTimeConvenience),
+    // Section C - the venue, the food & the timing
     duration: String(answers.duration),
-    locationRating: orNumber(answers.locationRating),
-
-    // Section E - venue & environment
     venueComfort: orNumber(answers.venueComfort),
-    seating: orNumber(answers.seating),
-    soundSetup: orNumber(answers.soundSetup),
-
-    // Section F - food & refreshment
     foodQuality: orNumber(answers.foodQuality),
-    foodTiming: orNumber(answers.foodTiming),
-    dietarySuggestions: orNull(answers.dietarySuggestions),
 
-    // Section G - overall experience
-    recommendScore: orNumber(answers.recommendScore),
+    // Section D - overall & the comment
     overallScore: orNumber(answers.overallScore),
-    enjoyedMost: String(answers.enjoyedMost).trim(),
-    improveNext: String(answers.improveNext).trim(),
     comments: orNull(answers.comments),
   };
 

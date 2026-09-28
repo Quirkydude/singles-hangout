@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Evaluation form",
-  description: `Tell us how ${EVENT.name} went. Seven short sections, about three minutes, and a thank-you SMS when you submit.`,
+  description: `Tell us how ${EVENT.name} went. Ten quick questions in four steps, about two minutes, and a thank-you SMS when you submit.`,
   alternates: { canonical: "/feedback" },
 };
 
@@ -69,8 +69,8 @@ export default async function FeedbackPage({ searchParams }: PageProps) {
           </h1>
           <p className="mt-3 text-ink-muted">
             Thank you for being part of {EVENT.name} &middot; {EVENT.theme}.
-            Please tell us how it went: seven short sections, about three
-            minutes. Every answer helps us plan the next edition.
+            Please tell us how it went: ten quick questions in four steps,
+            about two minutes. Every answer helps us plan the next edition.
           </p>
 
           <p className="mt-5 rounded-xl bg-white px-4 py-3 text-sm text-ink-muted shadow-sm">

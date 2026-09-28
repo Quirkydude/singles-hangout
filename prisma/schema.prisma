@@ -77,43 +77,42 @@ model Feedback {
   fullName String
   phone    String @unique
 
-  // Section A - general information
+  // Section A - about you
   ageRange  String
   firstTime String
 
-  // Section B - program content
-  programRating   Int
-  engaging        Int
-  topicsRelevance Int
-  favouritePart   String
-  nextTopic       String
-
-  // Section C - facilitators / speakers
+  // Section B - the program & the speakers
+  topicsRelevance     Int
   facilitatorRating   Int
   facilitatorFriendly Int
-  facilitatorTiming   Int
 
-  // Section D - location, date & time
-  dateTimeConvenience Int
-  duration            String
-  locationRating      Int
-
-  // Section E - venue & environment
+  // Section C - the venue, the food & the timing
+  duration     String
   venueComfort Int
-  seating      Int
-  soundSetup   Int
+  foodQuality  Int
 
-  // Section F - food & refreshment
-  foodQuality        Int
-  foodTiming         Int
-  dietarySuggestions String?
+  // Section D - overall & the comment
+  overallScore Int
+  comments     String?
 
-  // Section G - overall experience
-  recommendScore Int
-  overallScore   Int
-  enjoyedMost    String
-  improveNext    String
-  comments       String?
+  // Retired questions ---------------------------------------------------------
+  // The form was cut down to ten questions in four steps, so these are no
+  // longer asked. The columns stay (nullable) so the answers already collected
+  // are not lost; nothing in the app reads or writes them any more.
+  programRating       Int?
+  engaging            Int?
+  favouritePart       String?
+  nextTopic           String?
+  facilitatorTiming   Int?
+  dateTimeConvenience Int?
+  locationRating      Int?
+  seating             Int?
+  soundSetup          Int?
+  foodTiming          Int?
+  dietarySuggestions  String?
+  recommendScore      Int?
+  enjoyedMost         String?
+  improveNext         String?
 
   // Thank-you SMS bookkeeping, mirrors `Registration`.
   smsStatus SmsStatus @default(PENDING)
@@ -140,39 +139,40 @@ model PanelFeedback {
   panelistName String
   panelistKey  String @unique
 
-  // Section A - preparation & organization
+  // Section A - preparation
   topicClarity  Int
-  prepAdequacy  Int
   preEventComms Int
 
-  // Section B - panel moderation & flow
-  moderatorSteering   Int
-  timeAdequacy        String
-  contributionBalance Int
-  questionRelevance   Int
-
-  // Section C - audience & participant engagement
+  // Section B - the discussion
+  moderatorSteering  Int
+  timeAdequacy       String
+  questionRelevance  Int
   audienceEngagement Int
-  audienceQuestions  Int
-  audienceConnection Int
 
-  // Section D - venue, date & time
-  panelDateTime      Int
-  venueSuitability   Int
-  technicalLogistics Int
+  // Section C - the big picture
+  objectivesAchieved String
+  overallSuccess     Int
+  serveAgain         String
 
-  // Section E - overall program experience
-  overallOrganization Int
-  panelistHospitality Int
-  objectivesAchieved  String
+  // Section D - the comment
+  suggestions String?
 
-  // Section F - reflection & recommendations
-  wentWell        String
-  challenge       String
-  topicSuggestion String
-  overallSuccess  Int
-  serveAgain      String
-  suggestions     String?
+  // Retired questions ---------------------------------------------------------
+  // Same story as `Feedback`: the form was cut to ten questions, so these are
+  // no longer asked. The columns stay (nullable) so the answers already given
+  // are not lost; nothing in the app reads or writes them any more.
+  prepAdequacy        Int?
+  contributionBalance Int?
+  audienceQuestions   Int?
+  audienceConnection  Int?
+  panelDateTime       Int?
+  venueSuitability    Int?
+  technicalLogistics  Int?
+  overallOrganization Int?
+  panelistHospitality Int?
+  wentWell            String?
+  challenge           String?
+  topicSuggestion     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

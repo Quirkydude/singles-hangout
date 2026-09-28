@@ -320,8 +320,9 @@ export default async function HomePage() {
                   Attended the hangout?
                 </p>
                 <p className="text-sm text-ink-muted">
-                  Tell us how it went - seven short sections, about three
-                  minutes, and a thank-you SMS the moment you submit.
+                  Tell us how it went - ten quick questions in four steps,
+                  about two minutes, and a thank-you SMS the moment you
+                  submit.
                 </p>
               </div>
             </div>

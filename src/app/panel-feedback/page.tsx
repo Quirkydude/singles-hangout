@@ -31,10 +31,10 @@ export default function PanelFeedbackPage() {
           </h1>
           <p className="mt-3 text-ink-muted">
             Thank you for sitting on the panel at {EVENT.name} &middot;{" "}
-            {EVENT.theme}. Please tell us how it went from where you sat: six
-            short sections, about three minutes. Your honest view of the
-            preparation, the moderation and the audience helps us run a better
-            panel next time.
+            {EVENT.theme}. Please tell us how it went from where you sat: ten
+            quick questions in four steps, about two minutes. Your honest view
+            of the preparation, the moderation and the audience helps us run a
+            better panel next time.
           </p>
 
           <p className="mt-5 rounded-xl bg-white px-4 py-3 text-sm text-ink-muted shadow-sm">

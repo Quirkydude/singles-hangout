@@ -144,14 +144,9 @@ export default async function AdminPanelFeedbackPage() {
     (row) => row.objectivesAchieved === "Yes fully",
   ).length;
 
+  // Only one question on the form is open text, so one check covers it.
   const openAnswers = rows
-    .filter(
-      (row) =>
-        (row.wentWell ?? "").trim() !== "" ||
-        (row.challenge ?? "").trim() !== "" ||
-        (row.topicSuggestion ?? "").trim() !== "" ||
-        (row.suggestions ?? "").trim() !== "",
-    )
+    .filter((row) => (row.suggestions ?? "").trim() !== "")
     .slice(0, 8);
 
   return (
@@ -200,17 +195,17 @@ export default async function AdminPanelFeedbackPage() {
             <StatCard
               label="Would serve again"
               value={willingCount}
-              hint={`${willingCount} of ${rows.length} answered Yes - Q21`}
+              hint={`${willingCount} of ${rows.length} answered Yes`}
             />
             <StatCard
               label="Overall success"
               value={successRow?.average ?? "-"}
-              hint="Average of every answer - Q20"
+              hint="Average of every answer, out of 10"
             />
             <StatCard
               label="Objectives achieved"
               value={achievedFully}
-              hint={`Answered "Yes fully" - Q16`}
+              hint='Answered "Yes fully"'
             />
           </section>
 
@@ -282,10 +277,7 @@ export default async function AdminPanelFeedbackPage() {
                   <dl className="mt-2 space-y-2.5 text-sm">
                     {(
                       [
-                        ["Went well", row.wentWell],
-                        ["Biggest challenge", row.challenge],
-                        ["Topic to add", row.topicSuggestion],
-                        ["Other suggestions", row.suggestions],
+                        ["Comment", row.suggestions],
                       ] as const
                     ).map(([label, text]) =>
                       text && text.trim() !== "" ? (

@@ -28,7 +28,7 @@ function identityErrors(values: Record<string, string>): FieldErrors {
 }
 
 /**
- * The panelists' evaluation form: six steps, one section each, on the same
+ * The panelists' evaluation form: four steps, one section each, on the same
  * wizard the participants' form uses. The questions come from
  * `panel-feedback-questions.ts`, which the validator, the admin dashboard and
  * the CSV export read as well.

@@ -6,18 +6,21 @@
  * CSV export all label things identically (same idea as
  * `registration-options.ts`).
  *
+ * Ten questions in four steps, kept short on purpose: nine of them are a tap -
+ * a star rating, a 5-point agree/disagree or a fixed choice - and the one open
+ * question comes last, so a general comment is the final thing asked. Questions
+ * retired to get there are listed in `prisma/schema.prisma`; their columns stay
+ * in the database so earlier answers are not lost.
+ *
  * The comment above each question carries its number on the printed form, so
- * the organizers can line up a question with its answer during analysis.
- * As requested, questions 4, 11, 13-18 and 21 use a 5-point scale (stars, or
- * Strongly agree -> Strongly disagree) and question 20 keeps its 1-10 scale.
- * The shapes and the scales themselves are shared with the panelists' form -
- * see `evaluation-core.ts`.
+ * the organizers can line up a question with its answer during analysis. The
+ * shapes and the scales themselves are shared with the panelists' form - see
+ * `evaluation-core.ts`.
  *
  * Ratings are stored as whole numbers, never as words, so averages and
  * distributions need no clean-up before analysis.
  */
 
-import { EVENT } from "@/lib/event";
 import {
   answerLabelOf,
   questionTagOf,
@@ -62,7 +65,7 @@ export const FACILITATOR_RATING_OPTIONS: readonly ChoiceOption[] = [
 export const FEEDBACK_SECTIONS = [
   {
     letter: "A",
-    title: "General information",
+    title: "About you",
     intro: "Two quick questions so we can tell how different groups responded.",
     questions: [
       {
@@ -91,26 +94,11 @@ export const FEEDBACK_SECTIONS = [
   },
   {
     letter: "B",
-    title: "Program content",
+    title: "The program & the speakers",
+    intro: "The topics, and the people who led the discussion.",
     questions: [
       {
         // Q3
-        kind: "stars",
-        id: "programRating",
-        label: "How would you rate the overall program?",
-        lowLabel: "Poor",
-        highLabel: "Excellent",
-      },
-      {
-        // Q4 - 5-star rating, as requested.
-        kind: "stars",
-        id: "engaging",
-        label: "Was the program engaging and interactive?",
-        lowLabel: "Not at all",
-        highLabel: "Very engaging",
-      },
-      {
-        // Q5
         kind: "stars",
         id: "topicsRelevance",
         label: "How relevant were the topics discussed to you as a single?",
@@ -118,67 +106,28 @@ export const FEEDBACK_SECTIONS = [
         highLabel: "Very relevant",
       },
       {
-        // Q6
-        kind: "text",
-        id: "favouritePart",
-        label: "What was your favourite part of the program?",
-        placeholder: "e.g. the panel discussion",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q7
-        kind: "text",
-        id: "nextTopic",
-        label: "What topic would you want us to discuss next time?",
-        placeholder: "e.g. handling pressure from family",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-    ],
-  },
-  {
-    letter: "C",
-    title: "Facilitators / speakers",
-    questions: [
-      {
-        // Q8 - keeps the Poor -> Excellent wording from the printed form.
+        // Q4 - keeps the Poor -> Excellent wording from the printed form.
         kind: "choice",
         id: "facilitatorRating",
         label: "How would you rate the facilitators' knowledge and delivery?",
         options: FACILITATOR_RATING_OPTIONS,
       },
       {
-        // Q9 - Likert scale, as requested.
+        // Q5 - agree/disagree statement.
         kind: "agree",
         id: "facilitatorFriendly",
         label:
           "The facilitators were friendly, approachable and open to questions.",
       },
-      {
-        // Q10 - Likert scale, as requested.
-        kind: "agree",
-        id: "facilitatorTiming",
-        label: "The facilitators managed time well.",
-      },
     ],
   },
   {
-    letter: "D",
-    title: "Location, date & time",
+    letter: "C",
+    title: "The venue, the food & the timing",
+    intro: "The practical side of the day.",
     questions: [
       {
-        // Q11 - 5-star rating, as requested.
-        kind: "stars",
-        id: "dateTimeConvenience",
-        label: "How convenient was the chosen date and time for you?",
-        lowLabel: "Not convenient",
-        highLabel: "Very convenient",
-      },
-      {
-        // Q12
+        // Q6
         kind: "choice",
         id: "duration",
         label: "Was the duration of the hangout adequate?",
@@ -189,22 +138,7 @@ export const FEEDBACK_SECTIONS = [
         ],
       },
       {
-        // Q13 - 5-star rating, as requested.
-        kind: "stars",
-        id: "locationRating",
-        label: "How would you rate the location in terms of accessibility?",
-        help: `${EVENT.venue} - ${EVENT.address}`,
-        lowLabel: "Poor",
-        highLabel: "Excellent",
-      },
-    ],
-  },
-  {
-    letter: "E",
-    title: "Venue & environment",
-    questions: [
-      {
-        // Q14 - 5-star rating, as requested.
+        // Q7
         kind: "stars",
         id: "venueComfort",
         label: "Was the venue comfortable and welcoming?",
@@ -212,67 +146,22 @@ export const FEEDBACK_SECTIONS = [
         highLabel: "Very comfortable",
       },
       {
-        // Q15 - Likert scale, as requested.
-        kind: "agree",
-        id: "seating",
-        label: "The seating arrangement was okay.",
-      },
-      {
-        // Q16 - 5-star rating, as requested.
-        kind: "stars",
-        id: "soundSetup",
-        label:
-          "Was the sound and microphone setup clear throughout the program?",
-        lowLabel: "Not clear",
-        highLabel: "Very clear",
-      },
-    ],
-  },
-  {
-    letter: "F",
-    title: "Food & refreshment",
-    questions: [
-      {
-        // Q17 - 5-star rating, as requested.
+        // Q8
         kind: "stars",
         id: "foodQuality",
         label: "How would you rate the quality of the food and refreshment?",
         lowLabel: "Poor",
         highLabel: "Excellent",
       },
-      {
-        // Q18 - Likert scale, as requested.
-        kind: "agree",
-        id: "foodTiming",
-        label: "The food was served on time and well organised.",
-      },
-      {
-        // Q19 - open text, optional.
-        kind: "text",
-        id: "dietarySuggestions",
-        label: "What would you suggest for the food and refreshment next time?",
-        placeholder: "e.g. more vegetarian options",
-        required: false,
-        multiline: true,
-        maxLength: 600,
-      },
     ],
   },
   {
-    letter: "G",
-    title: "Overall experience",
+    letter: "D",
+    title: "Overall & your comment",
+    intro: "One rating, then anything else you want to tell us.",
     questions: [
       {
-        // Q20 - keeps the 1-10 scale from the printed form.
-        kind: "scale10",
-        id: "recommendScore",
-        label:
-          "How likely are you to recommend Singles Connect events to a friend?",
-        lowLabel: "Not likely",
-        highLabel: "Very likely",
-      },
-      {
-        // Q21 - 5-star rating, as requested.
+        // Q9
         kind: "stars",
         id: "overallScore",
         label: "How would you rate your overall experience?",
@@ -280,32 +169,12 @@ export const FEEDBACK_SECTIONS = [
         highLabel: "Excellent",
       },
       {
-        // Q22 - open text.
-        kind: "text",
-        id: "enjoyedMost",
-        label: "What did you enjoy most?",
-        placeholder: "The moment or part that stood out for you",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q23 - open text.
-        kind: "text",
-        id: "improveNext",
-        label: "What should we improve for the next edition?",
-        placeholder: "Anything you would change or add",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q24 - testimony, optional.
+        // Q10 - the one open question, kept last on purpose.
         kind: "text",
         id: "comments",
-        label: "Any other comments or testimony?",
-        help: "With your permission we may share this anonymously to promote the next edition.",
-        placeholder: "Share your testimony or any final thought",
+        label: "Any other comment or suggestion?",
+        help: "What you enjoyed most, what we should improve, or a testimony we may share anonymously.",
+        placeholder: "Anything else on your mind",
         required: false,
         multiline: true,
         maxLength: 1000,

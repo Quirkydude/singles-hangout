@@ -143,18 +143,14 @@ export default async function AdminFeedbackPage() {
   });
 
   const overallRow = ratingRows.find((row) => row.id === "overallScore");
-  const recommendRow = ratingRows.find((row) => row.id === "recommendScore");
+  const topicsRow = ratingRows.find((row) => row.id === "topicsRelevance");
   const smsSent = rows.filter((row) => row.smsStatus === "SENT").length;
   const smsFailed = rows.filter((row) => row.smsStatus === "FAILED").length;
   const linked = rows.filter((row) => row.registrationId !== null).length;
 
+  // Only one question on the form is open text, so one check covers it.
   const openAnswers = rows
-    .filter(
-      (row) =>
-        (row.improveNext ?? "").trim() !== "" ||
-        (row.comments ?? "").trim() !== "" ||
-        (row.enjoyedMost ?? "").trim() !== "",
-    )
+    .filter((row) => (row.comments ?? "").trim() !== "")
     .slice(0, 8);
 
   return (
@@ -206,9 +202,9 @@ export default async function AdminFeedbackPage() {
               hint={`${overallRow?.answers ?? 0} answers`}
             />
             <StatCard
-              label="Would recommend"
-              value={recommendRow?.average ?? "-"}
-              hint={`${recommendRow?.answers ?? 0} answers`}
+              label="Topics relevant"
+              value={topicsRow?.average ?? "-"}
+              hint={`${topicsRow?.answers ?? 0} answers`}
             />
             <StatCard
               label="Thank-you SMS"
@@ -289,12 +285,7 @@ export default async function AdminFeedbackPage() {
                   </div>
                   <dl className="mt-2 space-y-2.5 text-sm">
                     {(
-                      [
-                        ["Enjoyed most", row.enjoyedMost],
-                        ["Improve next", row.improveNext],
-                        ["Comments", row.comments],
-                        ["Topic request", row.nextTopic],
-                      ] as const
+                      [["Comment", row.comments]] as const
                     ).map(([label, text]) =>
                       text && text.trim() !== "" ? (
                         <div key={label}>
@@ -327,7 +318,7 @@ export default async function AdminFeedbackPage() {
                     <th className="py-2 pr-4">Phone</th>
                     <th className="py-2 pr-4">Age range</th>
                     <th className="py-2 pr-4">Overall</th>
-                    <th className="py-2 pr-4">Recommend</th>
+                    <th className="py-2 pr-4">Topics</th>
                     <th className="py-2 pr-4">SMS</th>
                     <th className="py-2">Received</th>
                   </tr>
@@ -353,7 +344,7 @@ export default async function AdminFeedbackPage() {
                         {row.overallScore} / 5
                       </td>
                       <td className="py-3 pr-4 font-semibold">
-                        {row.recommendScore} / 10
+                        {row.topicsRelevance} / 5
                       </td>
                       <td className="py-3 pr-4">
                         <span

@@ -6,6 +6,12 @@
  * the server-side validator, the admin dashboard and the CSV export all label
  * things identically.
  *
+ * Ten questions in four steps, kept short on purpose: nine of them are a tap -
+ * a star rating, a 5-point scale or a fixed choice - and the one open question
+ * comes last, so a general comment is the final thing asked. Questions retired
+ * to get there are listed in `prisma/schema.prisma`; their columns stay in the
+ * database so earlier answers are not lost.
+ *
  * The comment above each question carries its number on the printed handout,
  * so the organizers can line up a question with its answer during analysis.
  * The shapes and the scales themselves come from `evaluation-core.ts`, which
@@ -15,7 +21,6 @@
  * distributions need no clean-up before analysis.
  */
 
-import { EVENT } from "@/lib/event";
 import {
   answerLabelOf,
   questionTagOf,
@@ -25,7 +30,7 @@ import {
   type FeedbackSection,
 } from "@/lib/evaluation-core";
 
-/** Question 4 keeps the exact wording the organizers used on the handout. */
+/** Question 3 keeps the exact wording the organizers used on the handout. */
 export const MODERATOR_RATING_OPTIONS: readonly ChoiceOption[] = [
   { value: 1, label: "Poor" },
   { value: 2, label: "Fair" },
@@ -42,7 +47,7 @@ export const MODERATOR_RATING_OPTIONS: readonly ChoiceOption[] = [
 export const PANEL_FEEDBACK_SECTIONS = [
   {
     letter: "A",
-    title: "Preparation & organization",
+    title: "Preparation",
     intro: "How the panel was arranged before the day.",
     questions: [
       {
@@ -57,14 +62,6 @@ export const PANEL_FEEDBACK_SECTIONS = [
       {
         // Q2
         kind: "stars",
-        id: "prepAdequacy",
-        label: "Were you given enough time and information to prepare?",
-        lowLabel: "Not enough",
-        highLabel: "More than enough",
-      },
-      {
-        // Q3
-        kind: "stars",
         id: "preEventComms",
         label:
           "How was the communication and coordination from the organizing team before the event?",
@@ -75,11 +72,11 @@ export const PANEL_FEEDBACK_SECTIONS = [
   },
   {
     letter: "B",
-    title: "Panel moderation & flow",
-    intro: "The discussion itself, and how it was steered.",
+    title: "The discussion",
+    intro: "How the panel itself went.",
     questions: [
       {
-        // Q4 - keeps the Poor -> Excellent wording from the handout.
+        // Q3 - keeps the Poor -> Excellent wording from the handout.
         kind: "choice",
         id: "moderatorSteering",
         label:
@@ -87,7 +84,7 @@ export const PANEL_FEEDBACK_SECTIONS = [
         options: MODERATOR_RATING_OPTIONS,
       },
       {
-        // Q5
+        // Q4
         kind: "choice",
         id: "timeAdequacy",
         label: "Was the time allocated for the panel discussion adequate?",
@@ -98,16 +95,7 @@ export const PANEL_FEEDBACK_SECTIONS = [
         ],
       },
       {
-        // Q6
-        kind: "stars",
-        id: "contributionBalance",
-        label:
-          "Was there a good balance in allowing all panelists to contribute?",
-        lowLabel: "No balance",
-        highLabel: "Very balanced",
-      },
-      {
-        // Q7
+        // Q5
         kind: "stars",
         id: "questionRelevance",
         label:
@@ -115,15 +103,8 @@ export const PANEL_FEEDBACK_SECTIONS = [
         lowLabel: "Not relevant",
         highLabel: "Very relevant",
       },
-    ],
-  },
-  {
-    letter: "C",
-    title: "Audience & participant engagement",
-    intro: "The singles in the room, seen from the panel's side of the table.",
-    questions: [
       {
-        // Q8 - 1 Low -> 5 Highly engaged, as requested.
+        // Q6 - 1 Low -> 5 Highly engaged, as requested.
         kind: "choice",
         id: "audienceEngagement",
         label:
@@ -137,82 +118,15 @@ export const PANEL_FEEDBACK_SECTIONS = [
           { value: 5, label: "Highly engaged" },
         ],
       },
-      {
-        // Q9
-        kind: "stars",
-        id: "audienceQuestions",
-        label:
-          "Were the questions from participants meaningful and relevant to singles?",
-        lowLabel: "Not at all",
-        highLabel: "Very meaningful",
-      },
-      {
-        // Q10
-        kind: "stars",
-        id: "audienceConnection",
-        label:
-          "Do you feel the audience understood and connected with your contributions?",
-        lowLabel: "Not at all",
-        highLabel: "Very much",
-      },
     ],
   },
   {
-    letter: "D",
-    title: "Venue, date & time",
+    letter: "C",
+    title: "The big picture",
+    intro: "How the day looked from the panel's side of the table.",
     questions: [
       {
-        // Q11
-        kind: "stars",
-        id: "panelDateTime",
-        label: "How convenient was the date and time for you as a panelist?",
-        lowLabel: "Not convenient",
-        highLabel: "Very convenient",
-      },
-      {
-        // Q12
-        kind: "stars",
-        id: "venueSuitability",
-        label: `Was ${EVENT.venue} a suitable venue for a panel discussion?`,
-        help: "Think about noise, space and comfort for the panel.",
-        lowLabel: "Not suitable",
-        highLabel: "Very suitable",
-      },
-      {
-        // Q13
-        kind: "stars",
-        id: "technicalLogistics",
-        label:
-          "Were the technical logistics (microphones, seating for panelists, sound) adequate?",
-        lowLabel: "Not adequate",
-        highLabel: "Fully adequate",
-      },
-    ],
-  },
-  {
-    letter: "E",
-    title: "Overall program experience",
-    questions: [
-      {
-        // Q14
-        kind: "stars",
-        id: "overallOrganization",
-        label: "How would you rate the overall organization of the hangout?",
-        lowLabel: "Poor",
-        highLabel: "Excellent",
-      },
-      {
-        // Q15
-        kind: "stars",
-        id: "panelistHospitality",
-        label:
-          "How would you rate the hospitality and care given to panelists?",
-        help: "Reception, food, water and anything else that mattered to you.",
-        lowLabel: "Poor",
-        highLabel: "Excellent",
-      },
-      {
-        // Q16
+        // Q7
         kind: "choice",
         id: "objectivesAchieved",
         label:
@@ -223,46 +137,8 @@ export const PANEL_FEEDBACK_SECTIONS = [
           { value: "No", label: "No" },
         ],
       },
-    ],
-  },
-  {
-    letter: "F",
-    title: "Reflection & recommendations",
-    intro: "The part that matters most for the next edition.",
-    questions: [
       {
-        // Q17 - open text.
-        kind: "text",
-        id: "wentWell",
-        label: "What part of the panel discussion went exceptionally well?",
-        placeholder: "e.g. the questions that came from the audience",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q18 - open text.
-        kind: "text",
-        id: "challenge",
-        label: "What challenge did you encounter during the discussion?",
-        placeholder: "e.g. time ran out before the last questions",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q19 - open text.
-        kind: "text",
-        id: "topicSuggestion",
-        label:
-          "What topic or angle do you think we should add next time for singles?",
-        placeholder: "e.g. handling pressure from family",
-        required: true,
-        multiline: true,
-        maxLength: 600,
-      },
-      {
-        // Q20 - keeps the 1-10 scale from the handout.
+        // Q8 - keeps the 1-10 scale from the handout.
         kind: "scale10",
         id: "overallSuccess",
         label:
@@ -272,7 +148,7 @@ export const PANEL_FEEDBACK_SECTIONS = [
         legend: "10 means the program achieved everything it set out to do.",
       },
       {
-        // Q21
+        // Q9
         kind: "choice",
         id: "serveAgain",
         label: "Would you be willing to serve as a panelist again?",
@@ -282,13 +158,20 @@ export const PANEL_FEEDBACK_SECTIONS = [
           { value: "Maybe", label: "Maybe" },
         ],
       },
+    ],
+  },
+  {
+    letter: "D",
+    title: "Your comment",
+    intro: "The last question, and the one we read first.",
+    questions: [
       {
-        // Q22 - anything else on their mind. Optional.
+        // Q10 - the one open question, kept last on purpose.
         kind: "text",
         id: "suggestions",
-        label:
-          "Any other suggestions or observations to improve future editions?",
-        placeholder: "Anything else you would change or add",
+        label: "Any other comment or suggestion?",
+        help: "Anything you would keep, change or add for the next edition.",
+        placeholder: "Anything else on your mind",
         required: false,
         multiline: true,
         maxLength: 1000,

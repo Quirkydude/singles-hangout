@@ -34,7 +34,7 @@ function identityErrors(values: Record<string, string>): FieldErrors {
 }
 
 /**
- * The participants' evaluation form: seven short steps, one section each, run
+ * The participants' evaluation form: four short steps, one section each, run
  * on the shared wizard (`components/EvaluationWizard.tsx`). The questions
  * themselves come from `feedback-questions.ts`, which everything else - the
  * validator, the admin dashboard and the CSV export - reads as well.

@@ -153,7 +153,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/admin/settings` | Change capacity, open/close registration |
 | `/admin/feedback` | Evaluation results: averages, breakdowns, comments, CSV |
 | `/admin/panel-feedback` | Panelists' evaluation results: averages, breakdowns, comments, CSV |
-| `/feedback` | Post-event evaluation form (seven steps) |
+| `/feedback` | Post-event evaluation form (four steps, ten questions) |
 | `/feedback/thank-you` | Confirmation screen and thank-you SMS status |
 | `/panel-feedback` | Panelists' evaluation form |
 | `/panel-feedback/thank-you` | Confirmation screen for panelists |
@@ -179,14 +179,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Evaluation form (after the event)
 
-`/feedback` asks attendees how the hangout went: seven short steps (general
-information, program content, facilitators, location and time, venue, food,
-overall experience), 24 questions in all, followed by a thank-you SMS.
+`/feedback` asks attendees how the hangout went: ten questions in four short
+steps (about you, the program and the speakers, the venue/food/timing, and
+finally one overall rating plus a general comment), followed by a thank-you SMS.
+Nine of the ten questions are a tap - a star rating, a 5-point agree/disagree or
+a fixed choice - so the form stays quick on a phone.
 
 - Every question, option and scale lives in
   [`src/lib/feedback-questions.ts`](src/lib/feedback-questions.ts). The form,
   the server-side validator, the admin page and the CSV export all read from
   it, so they can never drift apart.
+- Questions retired to get the form down to ten keep their (now nullable)
+  columns in the database, so answers already collected are not lost; they are
+  listed under "Retired questions" in
+  [`prisma/schema.prisma`](prisma/schema.prisma) and are no longer asked, shown
+  or exported.
 - Ratings are stored as whole numbers (`4`, never `Very good`) to keep averages
   and breakdowns honest.
 - **One evaluation per phone number.** Re-submitting from the same number
@@ -207,9 +214,9 @@ choices, the latest written answers and every response in a table.
 ## Panelists' evaluation form
 
 `/panel-feedback` is the same kind of form for the people who sat on the panel:
-six sections (preparation and organization, panel moderation and flow, audience
-and participant engagement, venue/date/time, overall program experience,
-reflection and recommendations), 22 questions in all.
+ten questions in four short steps (preparation, the discussion, the big picture,
+and finally one general comment). It mirrors the participants' form in shape -
+the ratings and the choices - but not in wording.
 
 - The two forms share their vocabulary: the question shapes and the 5-point and
   1-10 scales live in

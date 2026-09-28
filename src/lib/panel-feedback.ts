@@ -66,38 +66,22 @@ export async function submitPanelFeedback(
     panelistName,
     panelistKey,
 
-    // Section A - preparation & organization
+    // Section A - preparation
     topicClarity: orNumber(answers.topicClarity),
-    prepAdequacy: orNumber(answers.prepAdequacy),
     preEventComms: orNumber(answers.preEventComms),
 
-    // Section B - panel moderation & flow
+    // Section B - the discussion
     moderatorSteering: orNumber(answers.moderatorSteering),
     timeAdequacy: String(answers.timeAdequacy),
-    contributionBalance: orNumber(answers.contributionBalance),
     questionRelevance: orNumber(answers.questionRelevance),
-
-    // Section C - audience & participant engagement
     audienceEngagement: orNumber(answers.audienceEngagement),
-    audienceQuestions: orNumber(answers.audienceQuestions),
-    audienceConnection: orNumber(answers.audienceConnection),
 
-    // Section D - venue, date & time
-    panelDateTime: orNumber(answers.panelDateTime),
-    venueSuitability: orNumber(answers.venueSuitability),
-    technicalLogistics: orNumber(answers.technicalLogistics),
-
-    // Section E - overall program experience
-    overallOrganization: orNumber(answers.overallOrganization),
-    panelistHospitality: orNumber(answers.panelistHospitality),
+    // Section C - the big picture
     objectivesAchieved: String(answers.objectivesAchieved),
-
-    // Section F - reflection & recommendations
-    wentWell: String(answers.wentWell).trim(),
-    challenge: String(answers.challenge).trim(),
-    topicSuggestion: String(answers.topicSuggestion).trim(),
     overallSuccess: orNumber(answers.overallSuccess),
     serveAgain: String(answers.serveAgain),
+
+    // Section D - the comment
     suggestions: orNull(answers.suggestions),
   };
 

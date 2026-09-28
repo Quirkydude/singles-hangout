@@ -147,7 +147,10 @@ function choiceField(id: FeedbackQuestionId): z.ZodTypeAny {
   return choiceSchema(questionById(id));
 }
 
-/** Every 5-point scale: the stars, the agree/disagree statements, and Q8. */
+/**
+ * Every 5-point scale: the stars, the agree/disagree statements and the
+ * Poor -> Excellent choice.
+ */
 function ratingField(): z.ZodTypeAny {
   const message = "Please choose a rating from 1 to 5.";
   return z.coerce
@@ -157,7 +160,7 @@ function ratingField(): z.ZodTypeAny {
     .max(5, message);
 }
 
-/** Question 20 keeps its 1-10 scale. */
+/** The 1-10 scale: the panelists' overall success question. */
 function scoreField(): z.ZodTypeAny {
   const message = "Please choose a score from 1 to 10.";
   return z.coerce
@@ -215,42 +218,22 @@ const feedbackFieldSchemas: Record<FeedbackField, z.ZodTypeAny> = {
       message: "Enter a valid Ghanaian mobile number, e.g. 024 123 4567.",
     }),
 
-  // Section A - general information
+  // Section A - about you
   ageRange: choiceField("ageRange"),
   firstTime: choiceField("firstTime"),
 
-  // Section B - program content
-  programRating: ratingField(),
-  engaging: ratingField(),
+  // Section B - the program & the speakers
   topicsRelevance: ratingField(),
-  favouritePart: textField("favouritePart"),
-  nextTopic: textField("nextTopic"),
-
-  // Section C - facilitators / speakers
   facilitatorRating: choiceField("facilitatorRating"),
   facilitatorFriendly: ratingField(),
-  facilitatorTiming: ratingField(),
 
-  // Section D - location, date & time
-  dateTimeConvenience: ratingField(),
+  // Section C - the venue, the food & the timing
   duration: choiceField("duration"),
-  locationRating: ratingField(),
-
-  // Section E - venue & environment
   venueComfort: ratingField(),
-  seating: ratingField(),
-  soundSetup: ratingField(),
-
-  // Section F - food & refreshment
   foodQuality: ratingField(),
-  foodTiming: ratingField(),
-  dietarySuggestions: textField("dietarySuggestions"),
 
-  // Section G - overall experience
-  recommendScore: scoreField(),
+  // Section D - overall & the comment
   overallScore: ratingField(),
-  enjoyedMost: textField("enjoyedMost"),
-  improveNext: textField("improveNext"),
   comments: textField("comments"),
 };
 
@@ -298,38 +281,22 @@ const panelFeedbackFieldSchemas: Record<PanelFeedbackField, z.ZodTypeAny> = {
     .min(2, "Please enter your name.")
     .max(120, "That name is too long."),
 
-  // Section A - preparation & organization
+  // Section A - preparation
   topicClarity: ratingField(),
-  prepAdequacy: ratingField(),
   preEventComms: ratingField(),
 
-  // Section B - panel moderation & flow
+  // Section B - the discussion
   moderatorSteering: panelChoiceField("moderatorSteering"),
   timeAdequacy: panelChoiceField("timeAdequacy"),
-  contributionBalance: ratingField(),
   questionRelevance: ratingField(),
-
-  // Section C - audience & participant engagement
   audienceEngagement: panelChoiceField("audienceEngagement"),
-  audienceQuestions: ratingField(),
-  audienceConnection: ratingField(),
 
-  // Section D - venue, date & time
-  panelDateTime: ratingField(),
-  venueSuitability: ratingField(),
-  technicalLogistics: ratingField(),
-
-  // Section E - overall program experience
-  overallOrganization: ratingField(),
-  panelistHospitality: ratingField(),
+  // Section C - the big picture
   objectivesAchieved: panelChoiceField("objectivesAchieved"),
-
-  // Section F - reflection & recommendations
-  wentWell: panelTextField("wentWell"),
-  challenge: panelTextField("challenge"),
-  topicSuggestion: panelTextField("topicSuggestion"),
   overallSuccess: scoreField(),
   serveAgain: panelChoiceField("serveAgain"),
+
+  // Section D - the comment
   suggestions: panelTextField("suggestions"),
 };
 
