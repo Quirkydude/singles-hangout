@@ -151,12 +151,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/admin` | Dashboard: stats, registrations, resend SMS, CSV export |
 | `/admin/checkin` | Door check-in with camera scanner |
 | `/admin/settings` | Change capacity, open/close registration |
-| `/admin/feedback` | Evaluation results: averages, breakdowns, comments, CSV |
-| `/feedback` | Post-event evaluation form (seven steps) |
-| `/feedback/thank-you` | Confirmation screen and thank-you SMS status |
 | `/api/og` | Dynamic social preview image (WhatsApp) |
 | `/api/ics` | Calendar invite |
-| `/api/admin/feedback/export` | Every evaluation as CSV |
 
 ## How registration behaves
 
@@ -172,33 +168,6 @@ Open [http://localhost:3000](http://localhost:3000).
   in that canonical form, so `024…`, `+233…` and `233…` all match.
 - **Codes** use an alphabet without `0/O` or `1/I/L` so they are easy to
   read aloud (`SH26-XXXXX`).
-
-## Evaluation form (after the event)
-
-`/feedback` asks attendees how the hangout went: seven short steps (general
-information, program content, facilitators, location and time, venue, food,
-overall experience), 24 questions in all, followed by a thank-you SMS.
-
-- Every question, option and scale lives in
-  [`src/lib/feedback-questions.ts`](src/lib/feedback-questions.ts). The form,
-  the server-side validator, the admin page and the CSV export all read from
-  it, so they can never drift apart.
-- Ratings are stored as whole numbers (`4`, never `Very good`) to keep averages
-  and breakdowns honest.
-- **One evaluation per phone number.** Re-submitting from the same number
-  replaces the earlier answer sheet instead of adding a second one.
-- When the number matches a registration, the response is linked to it so the
-  dashboard can tell how many registrants replied. People who attended without
-  registering are still welcome to submit.
-- The thank-you SMS is sent from the server and never blocks a submission: a
-  failure is recorded as `FAILED` with the reason, and the participant still
-  sees the confirmation screen.
-- Ticket links handed out as `/feedback?code=SH26-XXXXX` prefill the name and
-  phone number; either can still be changed.
-
-`/admin/feedback` shows per-question averages, the answer mix for the fixed
-choices, the latest written answers and every response in a table.
-`/api/admin/feedback/export` downloads the whole answer sheet as CSV.
 
 ## SMS
 
@@ -279,9 +248,6 @@ API route by an explicit cookie check).
 
 Use `/admin/settings` to change the cap or pause registration at any time
 without a redeploy.
-
-`/admin/feedback` lists every evaluation with per-question averages, answer
-breakdowns, the latest written answers and a CSV export.
 
 ## Security notes
 

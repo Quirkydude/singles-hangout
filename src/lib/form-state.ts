@@ -31,6 +31,20 @@ export type FindState = {
 
 export const initialFindState: FindState = { status: "idle" };
 
+// --- Evaluation form --------------------------------------------------------
+
+export type FeedbackState = {
+  status: "idle" | "error";
+  message?: string;
+  fieldErrors?: FieldErrors;
+  /** Which step to show after a failed submit, so errors are visible. */
+  step?: number;
+  /** Echoed back so a failed submit does not wipe the answers. */
+  values?: Record<string, string>;
+};
+
+export const initialFeedbackState: FeedbackState = { status: "idle" };
+
 // --- Admin ------------------------------------------------------------------
 
 export type AdminActionState = {

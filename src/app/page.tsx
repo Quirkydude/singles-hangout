@@ -304,6 +304,37 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================== */}
+        {/* Evaluation form - the ask that follows the event                */}
+        {/* ============================================================== */}
+        <section className="border-b border-line bg-white">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-start gap-3">
+              <span
+                className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red/10 text-brand-red"
+                aria-hidden
+              >
+                <CheckIcon />
+              </span>
+              <div>
+                <p className="font-display text-lg font-bold uppercase tracking-tight">
+                  Attended the hangout?
+                </p>
+                <p className="text-sm text-ink-muted">
+                  Tell us how it went - seven short sections, about three
+                  minutes, and a thank-you SMS the moment you submit.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/feedback"
+              className="shrink-0 rounded-full bg-brand-red px-6 py-3 text-center font-display text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-brand-red-dark"
+            >
+              Give feedback
+            </Link>
+          </div>
+        </section>
+
+        {/* ============================================================== */}
         {/* Dress code - deliberately loud, it is enforced at the door       */}
         {/* ============================================================== */}
         <section className="bg-ink text-white">

@@ -28,6 +28,12 @@ export function SiteHeader() {
 
         <nav className="flex items-center gap-5 text-sm font-semibold">
           <Link
+            href="/feedback"
+            className="text-ink-muted transition-colors hover:text-ink"
+          >
+            Feedback
+          </Link>
+          <Link
             href="/find"
             className="hidden text-ink-muted transition-colors hover:text-ink sm:block"
           >

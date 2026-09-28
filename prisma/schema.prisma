@@ -44,6 +44,9 @@ model Registration {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  // Evaluation form response, when this person filled one in.
+  feedback        Feedback?
+
   @@index([createdAt])
   @@index([attended])
   @@index([removed])
@@ -55,4 +58,70 @@ model Setting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+/// Singles Connect Hangout - Evaluation Form.
+///
+/// One response per phone number: re-submitting with the same number updates
+/// the existing answer sheet instead of creating a second one. When the number
+/// matches a registration, the response is linked to it so the admin dashboard
+/// can tell who has responded.
+///
+/// `registrationId` is nullable: people who attended without registering (or
+/// facilitators who joined late) may still send in an evaluation.
+model Feedback {
+  id             String        @id @default(cuid())
+  registrationId String?       @unique
+  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  fullName String
+  phone    String @unique
+
+  // Section A - general information
+  ageRange  String
+  firstTime String
+
+  // Section B - program content
+  programRating   Int
+  engaging        Int
+  topicsRelevance Int
+  favouritePart   String
+  nextTopic       String
+
+  // Section C - facilitators / speakers
+  facilitatorRating   Int
+  facilitatorFriendly Int
+  facilitatorTiming   Int
+
+  // Section D - location, date & time
+  dateTimeConvenience Int
+  duration            String
+  locationRating      Int
+
+  // Section E - venue & environment
+  venueComfort Int
+  seating      Int
+  soundSetup   Int
+
+  // Section F - food & refreshment
+  foodQuality        Int
+  foodTiming         Int
+  dietarySuggestions String?
+
+  // Section G - overall experience
+  recommendScore Int
+  overallScore   Int
+  enjoyedMost    String
+  improveNext    String
+  comments       String?
+
+  // Thank-you SMS bookkeeping, mirrors `Registration`.
+  smsStatus SmsStatus @default(PENDING)
+  smsError  String?
+  smsSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
 }

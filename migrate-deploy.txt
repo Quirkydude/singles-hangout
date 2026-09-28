@@ -1,0 +1,19 @@
+◇ injected env (10) from .env.local // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aws-1-eu-west-1.pooler.supabase.com:5432"
+
+4 migrations found in prisma/migrations
+
+Applying migration `20260928090000_add_feedback`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260928090000_add_feedback/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+DEPLOY_OK  

@@ -1,0 +1,21 @@
+63:      readonly required: boolean;
+64:      readonly multiline: boolean;
+65:      readonly maxLength: number;
+177:        required: true,
+178:        multiline: true,
+179:        maxLength: 600,
+187:        required: true,
+188:        multiline: true,
+189:        maxLength: 600,
+306:        required: false,
+307:        multiline: true,
+308:        maxLength: 600,
+339:        required: true,
+340:        multiline: true,
+341:        maxLength: 600,
+349:        required: true,
+350:        multiline: true,
+351:        maxLength: 600,
+360:        required: false,
+361:        multiline: true,
+362:        maxLength: 1000,

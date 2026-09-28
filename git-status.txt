@@ -1,0 +1,20 @@
+ M prisma/schema.prisma
+ M src/app/admin/(dashboard)/layout.tsx
+ M src/app/page.tsx
+ M src/app/sitemap.ts
+ M src/components/SiteChrome.tsx
+ M src/lib/form-state.ts
+ M src/lib/validation.ts
+?? '
+?? deploy-log.txt
+?? fe.txt
+?? git-status.txt
+?? migrate-status.txt
+?? prisma/migrations/20260928090000_add_feedback/
+?? qmap2.txt
+?? src/app/admin/(dashboard)/feedback/
+?? src/app/api/admin/feedback/
+?? src/app/feedback/
+?? src/lib/feedback-questions.ts
+?? src/lib/feedback.ts
+?? tsc-out.txt
