@@ -48,7 +48,7 @@ export type {
   FeedbackSection,
 } from "@/lib/evaluation-core";
 
-/** Question 8 keeps the exact wording the organizers used on the form. */
+/** Question 4 keeps the exact wording the organizers used on the form. */
 export const FACILITATOR_RATING_OPTIONS: readonly ChoiceOption[] = [
   { value: 1, label: "Poor" },
   { value: 2, label: "Fair" },
